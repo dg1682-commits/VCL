@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCL-Light | (주)일신비츠온 콘텐츠 기획 & 대본 스튜디오</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <!-- Favicon -->
+  <link rel="icon" href="https://vitsonmro.com/resources/img/mro/favicon/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="vcl-header">
+    <div class="brand-section">
+      <div class="brand-logo-badge">
+        <span>⚡ VCL-Light</span>
+      </div>
+      <div class="brand-titles">
+        <h1>(주)일신비츠온 콘텐츠 랩</h1>
+        <span class="company-sub">비츠온(Vitson) • 홈빛(Homevit) • 비츠온MRO 전용</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab-btn active" data-view="studio">🎬 스튜디오</button>
+      <button class="nav-tab-btn" data-view="storage">📂 대본 보관함</button>
+      <button class="nav-tab-btn" data-view="templates">📑 템플릿 관리</button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <a href="https://vitsonmro.com" target="_blank" rel="noopener noreferrer" class="btn-mro-link">
+        🛒 비츠온MRO 바로가기 ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWS CONTAINER -->
+  <main class="view-container">
+
+    <!-- 1. STUDIO VIEW (SPLIT LAYOUT) -->
+    <section id="view_studio" class="app-view active">
+      <div class="studio-layout">
+
+        <!-- LEFT PANE: PRODUCT RECOMMENDATIONS & SPECS -->
+        <div class="left-pane">
+
+          <!-- RECOMMENDATION BAR HEADER -->
+          <div class="rec-bar-header">
+            <div class="rec-title-group">
+              <h2>🎲 기획 아이템 추천 (비츠온MRO 기준)</h2>
+              <div class="filter-pills">
+                <button class="filter-pill active" data-filter="all">전체</button>
+                <button class="filter-pill" data-filter="vitson">비츠온</button>
+                <button class="filter-pill" data-filter="homevit">홈빛</button>
+                <button class="filter-pill" data-filter="mro">공구/MRO</button>
+              </div>
+            </div>
+            <button id="btnReroll" class="btn-reroll">
+              <span>다시 추천 받기 🎲</span>
+            </button>
+          </div>
+
+          <!-- 5 RECOMMENDATION CARDS STRIP -->
+          <div id="recCardsStrip" class="rec-cards-strip">
+            <!-- Dynamic 5 cards rendered via JS -->
+          </div>
+
+          <!-- SEARCH & DIRECT LOOKUP -->
+          <div class="product-search-bar">
+            <input type="text" id="productSearchInput" class="product-search-input" placeholder="원하는 제품명, 모델명 또는 비츠온MRO 상품코드 검색..." />
+            <button id="btnSearchProduct" class="btn-search">검색</button>
+          </div>
+
+          <!-- SELECTED PRODUCT DETAIL PANEL -->
+          <div id="productDetailPanel" class="product-detail-panel">
+            <div class="detail-card">
+              <!-- Top Detail Info -->
+              <div class="detail-header">
+                <img id="detailMainImg" src="https://vitsonimg.co.kr/images/productsNew/preparing.jpg" alt="제품 사진" class="detail-main-img" />
+                <div class="detail-header-info">
+                  <span id="detailBrandBadge" class="detail-brand-badge badge-vitson">비츠온</span>
+                  <h3 id="detailTitle" class="detail-title">제품을 선택해주세요</h3>
+                  <div class="detail-sub-meta">
+                    <span id="detailStandard">규격: -</span>
+                    <span id="detailModel">모델명: -</span>
+                    <span id="detailCode">상품코드: -</span>
+                  </div>
+                  <div class="detail-actions-row">
+                    <button id="btnInsertSpecs" class="btn-insert-specs">
+                      ➕ 제원 요약 대본에 삽입
+                    </button>
+                    <a id="btnMroView" href="https://vitsonmro.com" target="_blank" rel="noopener noreferrer" class="btn-mro-view">
+                      🔗 MRO 상세페이지 ↗
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detail Tabs Navigation -->
+              <div class="detail-tab-nav">
+                <button class="detail-tab-btn active" data-tab="specs">📋 상세 제원표</button>
+                <button class="detail-tab-btn" data-tab="ai">✨ Gemini AI 제품 분석</button>
+                <button class="detail-tab-btn" data-tab="images">🖼️ 상세페이지 이미지</button>
+              </div>
+
+              <!-- Tab 1: Specs Table -->
+              <div id="detailTab_specs" class="detail-tab-content active">
+                <table class="specs-table">
+                  <tbody id="specsTableBody">
+                    <!-- Dynamic Specs Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Tab 2: AI Analysis -->
+              <div id="detailTab_ai" class="detail-tab-content">
+                <div class="ai-analysis-box">
+                  <button id="btnRunAiAnalysis" class="btn-run-ai-analysis">
+                    ✨ Gemini AI 제품 분석 실행
+                  </button>
+                  <div id="aiAnalysisResult">
+                    <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">
+                      위 버튼을 누르면 Gemini 3.6 Flash가 제품 제원을 정밀 분석하여<br>
+                      <strong>핵심 셀링포인트, 추천 타겟층, 쇼츠용 바이럴 훅 5종</strong>을 즉시 도출합니다.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 3: Detail Images -->
+              <div id="detailTab_images" class="detail-tab-content">
+                <div id="detailImagesGallery" class="detail-images-gallery">
+                  <!-- Dynamic Images Rendered via JS -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT PANE: SCRIPT STUDIO & NOTEPAD -->
+        <div class="right-pane">
+
+          <!-- TOP STATUS & TITLE BAR -->
+          <div class="studio-top-bar">
+            <div class="script-title-row">
+              <input type="text" id="scriptTitleInput" class="script-title-input" placeholder="대본 제목을 입력하세요..." />
+              <select id="scriptStatusSelect" class="script-status-select">
+                <option value="planning">📝 기획중</option>
+                <option value="drafted">✍️ 대본완료</option>
+                <option value="filmed">🎬 촬영완료</option>
+                <option value="uploaded">🚀 업로드완료</option>
+              </select>
+              <button id="btnSaveScript" class="btn-save-script">💾 저장</button>
+            </div>
+
+            <!-- DURATION & CHAR ESTIMATOR GAUGE -->
+            <div class="duration-gauge-strip">
+              <div class="gauge-stats">
+                <div class="gauge-stat-item">
+                  <span>글자 수:</span>
+                  <strong id="statCharCount">0자</strong>
+                </div>
+                <div class="gauge-stat-item">
+                  <span>예상 영상 시간:</span>
+                  <strong id="statDuration">0초</strong>
+                </div>
+                <span id="statBadge" class="gauge-badge">숏폼 적합</span>
+              </div>
+              <div class="gauge-progress-bar">
+                <div id="statProgressFill" class="gauge-progress-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTION TOOLBAR -->
+          <div class="studio-toolbar">
+            <button id="btnToolbarInsertSpecs" class="btn-tool">📋 스펙 삽입</button>
+            <select id="templateSelectDropdown" class="template-dropdown">
+              <option value="">📑 템플릿 선택하여 적용...</option>
+            </select>
+            <button id="btnAiShorts" class="btn-tool ai-tool">⚡ AI 쇼츠 대본 (1분)</button>
+            <button id="btnAiLongform" class="btn-tool ai-tool">🎥 AI 롱폼 대본</button>
+            <button id="btnAiSubtitles" class="btn-tool ai-tool">💬 자막 분할</button>
+            <button id="btnAiVideoPrompts" class="btn-tool ai-tool">🤖 AI 영상 프롬프트</button>
+            
+            <div style="margin-left: auto; display: flex; gap: 6px;">
+              <button id="btnCopyScript" class="btn-tool" title="대본 본문 클립보드 복사">📋 복사</button>
+              <button id="btnExportTxt" class="btn-tool" title="텍스트 파일로 저장">📄 TXT</button>
+              <button id="btnExportMd" class="btn-tool" title="마크다운 파일로 저장">📝 MD</button>
+            </div>
+          </div>
+
+          <!-- EDITOR SUB-TABS -->
+          <div class="editor-tab-strip">
+            <button class="editor-tab-btn active" data-tab="script">✍️ 대본 본문</button>
+            <button class="editor-tab-btn" data-tab="notes">📒 아이디어 메모장</button>
+            <button class="editor-tab-btn" data-tab="subtitles">💬 자막 타임라인</button>
+            <button class="editor-tab-btn" data-tab="prompts">🤖 AI 비디오 샷</button>
+          </div>
+
+          <!-- EDITOR PANES -->
+          <div class="editor-area-wrapper">
+
+            <!-- Pane 1: Script Textarea -->
+            <div id="editorPane_script" class="editor-pane active">
+              <textarea id="scriptContent" class="script-textarea" placeholder="여기에 대본을 직접 작성하거나, 상단의 [AI 쇼츠 대본] 또는 [템플릿 적용] 버튼을 눌러보세요..."></textarea>
+            </div>
+
+            <!-- Pane 2: Notepad Textarea -->
+            <div id="editorPane_notes" class="editor-pane">
+              <textarea id="notepadContent" class="notepad-textarea" placeholder="촬영 꿀팁, 준비물, 출연자 동선, PPL 요청사항 등 자유 메모를 작성하세요..."></textarea>
+            </div>
+
+            <!-- Pane 3: Subtitles Output -->
+            <div id="editorPane_subtitles" class="editor-pane">
+              <div id="subtitlesOutput" class="subtitles-output-box">대본 툴바의 [자막 분할] 버튼을 누르면 영상 편집에 바로 쓸 수 있는 호흡별 자막이 생성됩니다.</div>
+            </div>
+
+            <!-- Pane 4: Video Prompts Output -->
+            <div id="editorPane_prompts" class="editor-pane">
+              <div id="videoPromptsOutput" class="video-prompts-output-box">대본 툴바의 [AI 영상 프롬프트] 버튼을 누르면 Runway Gen-3 / Kling용 프롬프트가 생성됩니다.</div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. STORAGE VIEW (대본 보관함) -->
+    <section id="view_storage" class="app-view storage-view">
+      <div class="storage-header">
+        <h2>📂 대본 보관함 (파이어베이스 실시간 연동)</h2>
+        <div class="storage-controls">
+          <input type="text" id="storageSearchInput" class="storage-search-input" placeholder="대본 제목, 본문, 브랜드 검색..." />
+          <button id="btnNewScript" class="btn-save-script">➕ 새 대본 작성</button>
+        </div>
+      </div>
+      <div id="storageGrid" class="storage-grid">
+        <!-- Dynamic script cards rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 3. TEMPLATES VIEW (템플릿 관리) -->
+    <section id="view_templates" class="app-view templates-view">
+      <div class="storage-header">
+        <div>
+          <h2>📑 대본 템플릿 관리</h2>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+            자주 사용하는 대본 구조를 등록해두면 {{제품명}}, {{규격}}, {{모델명}} 등 변수가 자동 치환되어 원클릭 완성됩니다.
+          </p>
+        </div>
+        <button id="btnOpenNewTemplateModal" class="btn-save-script">➕ 새 템플릿 등록</button>
+      </div>
+      <div id="templateGrid" class="template-grid">
+        <!-- Dynamic template cards rendered via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: NEW / EDIT TEMPLATE -->
+  <div id="templateModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="templateModalTitle">새 템플릿 등록</h3>
+        <button id="btnCloseTemplateModal" style="color: var(--text-muted); font-size: 1.2rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="tplInputId" value="" />
+        <div class="form-group">
+          <label>템플릿 제목</label>
+          <input type="text" id="tplInputTitle" class="form-control" placeholder="예: [비츠온/쇼츠] 40초 스피드 팩트체크" />
+        </div>
+        <div class="form-group">
+          <label>카테고리</label>
+          <input type="text" id="tplInputCategory" class="form-control" placeholder="예: 숏폼, 롱폼, B2B, 인테리어 등" />
+        </div>
+        <div class="form-group">
+          <label>간략 설명</label>
+          <input type="text" id="tplInputDesc" class="form-control" placeholder="템플릿의 목적이나 추천 사용 상황을 적어주세요." />
+        </div>
+        <div class="form-group">
+          <label>대본 본문 템플릿 (치환 태그 사용 가능: {{제품명}}, {{브랜드}}, {{규격}}, {{모델명}}, {{구매링크}})</label>
+          <textarea id="tplInputContent" class="form-control" rows="8" placeholder="대본 구조를 작성해주세요..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveTemplate" class="btn-save-script">템플릿 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Firebase SDK Compat (Zero-module, works directly in any browser & file:// protocol) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <!-- Embedded Product Catalog (222 Verified Items) -->
+  <script src="./data/productsData.js"></script>
+  <!-- Application Logic -->
+  <script src="./js/app-standalone.js"></script>
+</body>
+</html>
