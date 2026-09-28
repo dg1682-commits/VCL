@@ -1576,11 +1576,11 @@ button {
 }
 
 /* ========================================================
-   PRINT STYLING (A4 1장 최적 맞춤)
+   PRINT STYLING (A4 1장 가로 Landscape 최적 맞춤)
    ======================================================== */
 @media print {
   @page {
-    size: A4 portrait;
+    size: A4 landscape;
     margin: 8mm 8mm 8mm 8mm;
   }
 
@@ -1588,8 +1588,8 @@ button {
     background: #ffffff !important;
     color: #000000 !important;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-    font-size: 8pt !important;
-    line-height: 1.22 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.25 !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
@@ -1646,7 +1646,7 @@ button {
   }
 
   .storyboard-print-header h2 {
-    font-size: 13pt !important;
+    font-size: 13.5pt !important;
     font-weight: 800 !important;
     color: #000000 !important;
     margin: 0 0 4px 0 !important;
@@ -1654,14 +1654,14 @@ button {
   }
 
   .sb-print-meta {
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     color: #333333 !important;
     display: flex !important;
     justify-content: space-between !important;
     font-weight: 600 !important;
   }
 
-  /* Print Table (Excel Exact Replica) */
+  /* Print Table (Excel Exact Replica - Landscape Wide) */
   .storyboard-table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -1680,19 +1680,19 @@ button {
     background: #f1f5f9 !important;
     color: #000000 !important;
     font-weight: 800 !important;
-    font-size: 8.5pt !important;
+    font-size: 9pt !important;
     text-align: center !important;
     border: 1px solid #000000 !important;
-    padding: 3px 5px !important;
+    padding: 4px 6px !important;
   }
 
   .storyboard-table td {
     background: #ffffff !important;
     color: #000000 !important;
     border: 1px solid #000000 !important;
-    padding: 3px 5px !important;
-    font-size: 7.8pt !important;
-    line-height: 1.2 !important;
+    padding: 3.5px 6px !important;
+    font-size: 8.2pt !important;
+    line-height: 1.25 !important;
     vertical-align: middle !important;
     word-break: break-word !important;
   }
@@ -1701,7 +1701,7 @@ button {
     border: none !important;
     background: transparent !important;
     color: #000000 !important;
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     font-weight: 800 !important;
     padding: 0 !important;
     text-align: center !important;
@@ -1712,14 +1712,14 @@ button {
   .sb-row-no {
     color: #000000 !important;
     font-weight: 800 !important;
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     text-align: center !important;
   }
 
   .sb-cell-editable {
     color: #000000 !important;
-    font-size: 7.8pt !important;
-    line-height: 1.2 !important;
+    font-size: 8.2pt !important;
+    line-height: 1.25 !important;
     padding: 0 !important;
     margin: 0 !important;
     min-height: auto !important;
@@ -1733,5 +1733,220 @@ button {
     color: #111827 !important;
     font-weight: 500 !important;
   }
+}
+
+/* ========================================================
+   HEADER GUIDE BUTTON & MODAL STYLES
+   ======================================================== */
+.btn-header-guide {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  border: 1px solid #3b82f6;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  margin-left: 8px;
+}
+
+.btn-header-guide:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+/* Guide Modal Layout */
+.guide-modal-box {
+  max-width: 820px !important;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-modal-body {
+  overflow-y: auto;
+  padding-right: 12px;
+}
+
+.guide-section {
+  margin-bottom: 24px;
+}
+
+.guide-section-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #60a5fa;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+  padding-bottom: 6px;
+}
+
+.guide-step-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+
+.guide-step-card:hover {
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.guide-step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.guide-step-badge {
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.guide-step-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.guide-step-desc {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding-left: 2px;
+}
+
+.guide-step-desc strong {
+  color: #93c5fd;
+}
+
+.guide-step-desc mark {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.guide-faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.guide-faq-item {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.guide-faq-q {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+
+.guide-faq-a {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* Confirm Overwrite Modal */
+.overwrite-modal-box {
+  max-width: 520px !important;
+}
+
+.overwrite-dest-banner {
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+  color: #93c5fd;
+  line-height: 1.45;
+}
+
+.overwrite-warning-box {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 0.84rem;
+  color: #fbbf24;
+  line-height: 1.45;
+}
+
+.overwrite-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-overwrite-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-overwrite-danger:hover {
+  background: #dc2626;
+}
+
+.btn-overwrite-append {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-overwrite-append:hover {
+  background: #1d4ed8;
+}
+
+.btn-overwrite-cancel {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.btn-overwrite-cancel:hover {
+  color: #fff;
+  border-color: #fff;
 }
 
