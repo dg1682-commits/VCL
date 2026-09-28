@@ -378,8 +378,78 @@ const ProductService = {
   }
 };
 
-// 4. Default Templates
+// 4. Default Storyboard Sample & Templates
+const DEFAULT_STORYBOARD_SAMPLE = [
+  { section: '본문', num: 2, script: '오늘은 큐브 멀티탭을 가지고 왔어요', scene: '인서트(상하좌우팬)' },
+  { section: '본문', num: 3, script: '디자인이 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요', scene: '클로즈업 컷 > 책상위에 올려둔 모습' },
+  { section: '본문', num: 4, script: '큐브형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 꽂을 수 있어요', scene: '기존 안껴지는거 모습 > 다양한 모양 멀티탭 꽂는 모습' },
+  { section: '본문', num: 5, script: '그리고 포트도 다양해요, USB 1개, C타입 2개 포트가 있는데, C타입은 PD형 20W 고속충전까지 지원해서,\n휴대폰 충전하는데 스트레스가 없어요', scene: '포트 클로즈업 > USB 꽂기 > C타입 꽂기 > 고속충전 뜨는거 보여주기 > 마음 편한 모습(짤)' },
+  { section: '본문', num: 6, script: '이렇게 예쁜데 능력좋은 멀티탭이 두종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요', scene: '양손에 두개 들고 있기 > 플러그 모습 > 코드 모습' },
+  { section: '본문', num: 7, script: '플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 손 닿는 곳에서 편하게 쓰고 싶을 때 딱이에요', scene: '벽에 꽂는 모습 > 책상위에 두고 쓰는 모습' },
+  { section: '본문', num: 8, script: '안전도 문제없어요, 과부하 차단 기능이 있어서 안심하고 쓸 수 있고', scene: '차단 기능 클로즈업 > 안심하는 표정' },
+  { section: '본문', num: 9, script: '불에 잘 안 타는 난연 1등급 V-0 소재로 만들어져서 화재 걱정도 덜어줍니다', scene: '불에 안타는 짤 > 소재 인증 마크 or 텍스트 강조' },
+  { section: '본문', num: 10, script: '게다가 KC 인증까지 완료된 제품이라 믿고 쓸 수 있어요', scene: 'KC인증 마크 강조' },
+  { section: '본문', num: 11, script: '지금 비츠온MRO에서 특가로 만나보세요', scene: '제품 들고 손인사 > 비츠온MRO 로고 및 자막' },
+  { section: '엔딩', num: 18, script: '작고 예쁜데 충전까지 빠른 루미앤 큐브 멀티탭', scene: '제품 연출 컷' },
+  { section: '엔딩', num: 19, script: '지금 바로 사용해보세요!', scene: '구매링크 유도 컷' }
+];
+
 const DEFAULT_TEMPLATES = [
+  {
+    id: 'tpl_lumian_cube_multitab',
+    title: '[실무 2단 콘티] 루미앤 큐브 멀티탭 (1분 22초 실전 샘플)',
+    category: '비츠온/2단콘티',
+    description: '실무 엑셀 콘티 포맷 (구성/번호/대본/장면) 실전 샘플 - 영상 실측 1분 22초 기준',
+    content: `[00:00~00:05] 오프닝 도입
+(화면: 인서트(상하좌우팬))
+오늘은 큐브 멀티탭을 가지고 왔어요
+
+[00:05~00:16] 디자인 & 첫인상
+(화면: 클로즈업 컷 > 책상위에 올려둔 모습)
+디자인이 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요
+
+[00:16~00:26] 큐브 형태 특장점
+(화면: 기존 안껴지는거 모습 > 다양한 모양 멀티탭 꽂는 모습)
+큐브형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 꽂을 수 있어요
+
+[00:26~00:44] 고속 충전 포트
+(화면: 포트 클로즈업 > USB 꽂기 > C타입 꽂기 > 고속충전 뜨는거 보여주기 > 마음 편한 모습(짤))
+그리고 포트도 다양해요, USB 1개, C타입 2개 포트가 있는데, C타입은 PD형 20W 고속충전까지 지원해서,
+휴대폰 충전하는데 스트레스가 없어요
+
+[00:44~00:54] 2종 라인업 소개
+(화면: 양손에 두개 들고 있기 > 플러그 모습 > 코드 모습)
+이렇게 예쁜데 능력좋은 멀티탭이 두종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요
+
+[00:54~01:08] 사용 상황별 추천
+(화면: 벽에 꽂는 모습 > 책상위에 두고 쓰는 모습)
+플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 손 닿는 곳에서 편하게 쓰고 싶을 때 딱이에요
+
+[01:08~01:14] 안전 장치 (과부하 차단)
+(화면: 차단 기능 클로즈업 > 안심하는 표정)
+안전도 문제없어요, 과부하 차단 기능이 있어서 안심하고 쓸 수 있고
+
+[01:14~01:21] 난연 소재 안심
+(화면: 불에 안타는 짤 > 소재 인증 마크 or 텍스트 강조)
+불에 잘 안 타는 난연 1등급 V-0 소재로 만들어져서 화재 걱정도 덜어줍니다
+
+[01:21~01:26] 국가 공인 KC 인증
+(화면: KC인증 마크 강조)
+게다가 KC 인증까지 완료된 제품이라 믿고 쓸 수 있어요
+
+[01:26~01:30] MRO 프로모션 안내
+(화면: 제품 들고 손인사 > 비츠온MRO 로고 및 자막)
+지금 비츠온MRO에서 특가로 만나보세요
+
+[01:30~01:35] 엔딩 요약
+(화면: 제품 연출 컷)
+작고 예쁜데 충전까지 빠른 루미앤 큐브 멀티탭
+
+[01:35~01:40] 최종 CTA
+(화면: 구매링크 유도 컷)
+지금 바로 사용해보세요!`,
+    storyboard: JSON.parse(JSON.stringify(DEFAULT_STORYBOARD_SAMPLE))
+  },
   {
     id: 'tpl_vitson_shorts_1min',
     title: '[비츠온/쇼츠] 1분 완성 스펙 & 실사용 리뷰',
@@ -524,6 +594,14 @@ const TemplateService = {
       res = res.replaceAll(k, v);
     }
     return res;
+  },
+  applyVariablesToStoryboard(rows, p) {
+    if (!rows || !Array.isArray(rows)) return [];
+    return rows.map(r => ({
+      ...r,
+      script: this.applyVariables(r.script || '', p),
+      scene: this.applyVariables(r.scene || '', p)
+    }));
   }
 };
 
@@ -533,11 +611,12 @@ const ScriptService = {
   scripts: [],
 
   initNew(p = null) {
+    const isDefault = !p;
     this.currentScript = {
       id: 'script_' + Date.now(),
-      title: p ? `[${p.brandNm}] ${p.productNm} 콘텐츠 기획` : '새로운 콘텐츠 대본',
+      title: p ? `[${p.brandNm}] ${p.productNm} 2단 콘티` : '[비츠온] 루미앤 큐브 멀티탭 (실전 2단 콘티)',
       content: '',
-      notes: '',
+      notes: isDefault ? '💡 [2단 콘티(표)] 탭에서 각 셀을 직접 클릭하여 자유롭게 수정할 수 있습니다.\n💡 [🖨️ A4 1장 깔끔 인쇄]를 누르면 여백과 글자 크기가 1장에 딱 맞춰집니다.\n💡 기존 엑셀 대본이 있다면 [📋 엑셀 붙여넣기]를 눌러 복사한 표를 즉시 불러오세요.' : '',
       product: p ? {
         productCode: p.productCode,
         productNm: p.productNm,
@@ -545,13 +624,26 @@ const ScriptService = {
         standard: p.standard,
         modelName: p.modelName,
         pictureNm: p.pictureNm
-      } : null,
+      } : {
+        productCode: '1010043332',
+        productNm: '루미앤 큐브 멀티탭',
+        brandNm: '비츠온',
+        standard: '3구 멀티탭 + 20W PD C타입/USB 고속충전',
+        modelName: '루미앤 큐브 멀티탭',
+        pictureNm: 'https://mro3.vitson.com/product/1010043332_0.jpg'
+      },
       status: 'planning',
       subtitles: '',
       videoPrompts: '',
+      storyboard: isDefault ? JSON.parse(JSON.stringify(DEFAULT_STORYBOARD_SAMPLE)) : [
+        { section: '도입', num: 1, script: `${p.productNm} 오프닝 및 문제제기`, scene: '제품 클로즈업 & 인서트' },
+        { section: '본문', num: 2, script: `핵심 스펙: ${p.standard || '실용적인 규격과 디자인'}`, scene: '실사용 및 작동 시연' },
+        { section: '엔딩', num: 3, script: '지금 비츠온MRO에서 특가로 만나보세요!', scene: '구매링크 및 엔딩 로고' }
+      ],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+    this.currentScript.content = this.storyboardToText(this.currentScript.storyboard);
     return this.currentScript;
   },
 
@@ -586,6 +678,7 @@ const ScriptService = {
       ...orig,
       id: 'script_' + Date.now(),
       title: `${orig.title} (복사본)`,
+      storyboard: orig.storyboard ? JSON.parse(JSON.stringify(orig.storyboard)) : [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -594,13 +687,139 @@ const ScriptService = {
     return saved;
   },
 
-  calculateStats(text = '') {
-    const raw = text || '';
+  storyboardToText(rows = []) {
+    if (!rows || rows.length === 0) return '';
+    return rows.map(r => `[${r.section || '본문'} ${r.num || ''}] ${r.script || ''}\n(장면: ${r.scene || ''})`).join('\n\n');
+  },
+
+  textToStoryboard(text = '') {
+    if (!text || !text.trim()) return [];
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const rows = [];
+    let curSec = '본문';
+    let rowNum = 1;
+    let pendingScene = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.startsWith('[') && line.includes(']')) {
+        const secMatch = line.match(/\[(.*?)\]/);
+        if (secMatch) {
+          const s = secMatch[1];
+          if (s.includes('도입') || s.includes('오프닝') || s.includes('훅') || s.includes('00:00')) curSec = '도입';
+          else if (s.includes('엔딩') || s.includes('아웃트로') || s.includes('마무리') || s.includes('CTA')) curSec = '엔딩';
+          else curSec = '본문';
+        }
+        continue;
+      }
+      if (line.startsWith('(') && line.endsWith(')')) {
+        const sc = line.replace(/^\(|\)$/g, '').replace(/^화면\s*:\s*/, '').trim();
+        if (rows.length > 0 && !rows[rows.length - 1].scene) {
+          rows[rows.length - 1].scene = sc;
+        } else {
+          pendingScene = sc;
+        }
+        continue;
+      }
+      const cleanScript = line.replace(/^"|"$/g, '').replace(/^\d+[\.\)]\s*/, '').trim();
+      if (cleanScript) {
+        rows.push({
+          section: curSec,
+          num: rowNum++,
+          script: cleanScript,
+          scene: pendingScene || '제품 시연 / 앵글 컷'
+        });
+        pendingScene = '';
+      }
+    }
+    if (rows.length === 0 && lines.length > 0) {
+      lines.forEach((l, idx) => {
+        rows.push({ section: '본문', num: idx + 1, script: l, scene: '제품 연출' });
+      });
+    }
+    return rows;
+  },
+
+  parseExcelText(rawText) {
+    if (!rawText || !rawText.trim()) return [];
+    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const rows = [];
+    let autoNum = 1;
+
+    for (let line of lines) {
+      const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
+      if (cols.some(c => c === '대본' || c === '구성' || c === '장면' || c === '내용')) continue;
+      if (cols.length === 0 || (cols.length === 1 && !cols[0])) continue;
+
+      let section = '본문';
+      let num = autoNum;
+      let script = '';
+      let scene = '';
+
+      if (cols.length >= 4) {
+        section = cols[0] || '본문';
+        num = parseInt(cols[1], 10) || autoNum;
+        script = cols[2] || '';
+        scene = cols[3] || '';
+      } else if (cols.length === 3) {
+        if (/^\d+$/.test(cols[0])) {
+          num = parseInt(cols[0], 10);
+          script = cols[1] || '';
+          scene = cols[2] || '';
+        } else {
+          section = cols[0];
+          script = cols[1] || '';
+          scene = cols[2] || '';
+        }
+      } else if (cols.length === 2) {
+        script = cols[0] || '';
+        scene = cols[1] || '';
+      } else if (cols.length === 1) {
+        script = cols[0] || '';
+      }
+
+      if (script || scene) {
+        rows.push({
+          section: section || '본문',
+          num: num,
+          script: script,
+          scene: scene
+        });
+        autoNum++;
+      }
+    }
+    return rows;
+  },
+
+  calculateStats(input = '') {
+    let raw = '';
+    let isStoryboard = false;
+    let sceneCount = 0;
+    
+    if (Array.isArray(input)) {
+      isStoryboard = true;
+      sceneCount = input.length;
+      raw = input.map(r => r.script || '').join('\n');
+    } else if (typeof input === 'string') {
+      raw = input || '';
+    } else if (input && typeof input === 'object') {
+      if (Array.isArray(input.storyboard) && input.storyboard.length > 0) {
+        isStoryboard = true;
+        sceneCount = input.storyboard.length;
+        raw = input.storyboard.map(r => r.script || '').join('\n');
+      } else {
+        raw = input.content || '';
+      }
+    }
+
     const charCountWithSpaces = raw.length;
     const charCountNoSpaces = raw.replace(/\s/g, '').length;
     const spoken = raw.replace(/\[[^\]]+\]/g, '').replace(/\([^)]+\)/g, '').replace(/“|”|"/g, '').trim();
     const spokenChars = spoken.replace(/\s/g, '').length;
-    const seconds = Math.round(spokenChars / 5.2);
+
+    // 실측 캘리브레이션: 루미앤 큐브 멀티탭 12씬 (공백제외 379자 / 공백포함 502자 -> 실영상 82초 = 1분 22초)
+    // 컷 전환, 인서트 짤, 시연 딜레이를 고려한 4.62자/초 기준
+    const seconds = spokenChars > 0 ? Math.round(spokenChars / 4.62) : 0;
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     const timeFormatted = m > 0 ? `${m}분 ${s}초` : `${s}초`;
@@ -615,9 +834,13 @@ const ScriptService = {
     } else if (seconds <= 60) {
       recommendation = '1분 쇼츠 최적 (45~60초)';
       progressColor = '#10b981';
-    } else if (seconds <= 120) {
-      recommendation = '롱 쇼츠/릴스 (1~2분)';
+    } else if (seconds <= 90) {
+      recommendation = '실전 숏폼/릴스 (1분~1분30초)';
+      progressColor = '#10b981';
+    } else if (seconds <= 180) {
+      recommendation = '미드폼/심층리뷰 (2~3분)';
       progressColor = '#f59e0b';
+      percentage = 100;
     } else {
       recommendation = '유튜브 롱폼 리뷰 (3분+)';
       progressColor = '#8b5cf6';
@@ -632,25 +855,50 @@ const ScriptService = {
       timeFormatted,
       recommendation,
       progressColor,
-      percentage
+      percentage,
+      sceneCount
     };
   },
 
   export(fmt = 'txt') {
     const s = this.currentScript;
-    const stats = this.calculateStats(s.content);
+    const stats = this.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
     let out = '';
+    const rows = s.storyboard || [];
+
     if (fmt === 'md') {
-      out = `# ${s.title}\n\n> **브랜드:** ${s.product?.brandNm || '일신비츠온'} | **예상시간:** ${stats.timeFormatted}\n\n## 대본 본문\n\n${s.content}\n\n`;
-      if (s.notes) out += `## 제작 메모\n\n${s.notes}\n\n`;
-      if (s.subtitles) out += `## 자막 타임라인\n\n\`\`\`\n${s.subtitles}\n\`\`\`\n\n`;
-      if (s.videoPrompts) out += `## AI 영상 프롬프트\n\n${s.videoPrompts}\n`;
+      out = `# ${s.title}\n\n> **브랜드:** ${s.product?.brandNm || '일신비츠온'} | **예상시간:** ${stats.timeFormatted} (${stats.charCountWithSpaces}자, ${rows.length}개 씬)\n\n`;
+      if (rows.length > 0) {
+        out += `## 🎬 2단 콘티 (스토리보드)\n\n| 구성 | 번호 | 대본 (나레이션/대사) | 장면 (카메라/연출/짤) |\n|:---:|:---:|---|---|\n`;
+        rows.forEach(r => {
+          const scr = (r.script || '').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+          const scn = (r.scene || '').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+          out += `| ${r.section || '본문'} | ${r.num} | ${scr} | ${scn} |\n`;
+        });
+        out += `\n`;
+      }
+      out += `## ✍️ 대본 본문 (줄글)\n\n${s.content || ''}\n\n`;
+      if (s.notes) out += `## 📒 제작 메모\n\n${s.notes}\n\n`;
+      if (s.subtitles) out += `## 💬 자막 타임라인\n\n\`\`\`\n${s.subtitles}\n\`\`\`\n\n`;
+      if (s.videoPrompts) out += `## 🤖 AI 영상 프롬프트\n\n${s.videoPrompts}\n`;
     } else {
-      out = `[제목] ${s.title}\n[정보] 브랜드: ${s.product?.brandNm || '일신비츠온'} | 소요시간: ${stats.timeFormatted}\n--------------------------------------------------\n\n${s.content}\n\n`;
+      out = `==================================================\n[제목] ${s.title}\n[정보] 브랜드: ${s.product?.brandNm || '일신비츠온'} | 소요시간: ${stats.timeFormatted} (${stats.charCountWithSpaces}자)\n==================================================\n\n`;
+      if (rows.length > 0) {
+        out += `[2단 콘티 표]\n`;
+        out += `구성\t번호\t대본\t장면\n`;
+        rows.forEach(r => {
+          const scr = (r.script || '').replace(/\t/g, ' ').replace(/\n/g, ' ');
+          const scn = (r.scene || '').replace(/\t/g, ' ').replace(/\n/g, ' ');
+          out += `${r.section || '본문'}\t${r.num}\t${scr}\t${scn}\n`;
+        });
+        out += `\n--------------------------------------------------\n\n`;
+      }
+      out += `[대본 본문]\n${s.content || ''}\n\n`;
       if (s.notes) out += `[메모장]\n${s.notes}\n\n`;
       if (s.subtitles) out += `[자막 타임라인]\n${s.subtitles}\n\n`;
       if (s.videoPrompts) out += `[AI 영상 프롬프트]\n${s.videoPrompts}\n`;
     }
+
     const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -920,6 +1168,65 @@ const App = {
       this.renderRecommendationCards([customP, ...ProductService.products.slice(0, 4)]);
       this.showToast(`[${name}] 제품이 성공적으로 등록되어 기획 스튜디오에 선택되었습니다! 🚀`, 'success');
     });
+
+    // 🎬 2-Column Storyboard Table Handlers
+    document.getElementById('btnAddStoryboardRow')?.addEventListener('click', () => {
+      this.addStoryboardRow();
+    });
+
+    document.getElementById('btnOpenPasteExcelModal')?.addEventListener('click', () => {
+      const modal = document.getElementById('excelPasteModal');
+      const input = document.getElementById('excelPasteInput');
+      if (input) input.value = '';
+      if (modal) modal.classList.add('active');
+      setTimeout(() => input?.focus(), 100);
+    });
+
+    document.getElementById('btnCloseExcelPasteModal')?.addEventListener('click', () => {
+      document.getElementById('excelPasteModal')?.classList.remove('active');
+    });
+
+    document.getElementById('btnApplyExcelPaste')?.addEventListener('click', () => {
+      const input = document.getElementById('excelPasteInput');
+      const raw = input?.value || '';
+      if (!raw.trim()) {
+        alert('붙여넣을 엑셀 대본 내용을 입력해주세요.');
+        return;
+      }
+      const rows = ScriptService.parseExcelText(raw);
+      if (rows.length === 0) {
+        alert('인식 가능한 대본 행이 없습니다. 탭 또는 줄바꿈으로 구분된 텍스트를 입력해주세요.');
+        return;
+      }
+      ScriptService.currentScript.storyboard = rows;
+      ScriptService.currentScript.content = ScriptService.storyboardToText(rows);
+      this.renderStoryboardTable();
+      this.updateStats();
+      this.debounceAutoSave();
+      document.getElementById('excelPasteModal')?.classList.remove('active');
+      this.showToast(`엑셀 대본 ${rows.length}개 행을 콘티 표로 성공적으로 가져왔습니다! 📋`, 'success');
+    });
+
+    document.getElementById('btnCopyStoryboardExcel')?.addEventListener('click', () => {
+      this.copyStoryboardToExcel();
+    });
+
+    document.getElementById('btnSyncScriptToStoryboard')?.addEventListener('click', () => {
+      this.syncScriptToStoryboard();
+    });
+
+    document.getElementById('btnSyncStoryboardToScript')?.addEventListener('click', () => {
+      this.syncStoryboardToScript();
+    });
+
+    // 🖨️ Clean A4 1-Page Print Buttons (Toolbar & Tab)
+    document.getElementById('btnPrintStoryboardBtn')?.addEventListener('click', () => {
+      this.printStoryboard();
+    });
+
+    document.getElementById('btnPrintStoryboardToolbar')?.addEventListener('click', () => {
+      this.printStoryboard();
+    });
   },
 
   switchView(v) {
@@ -1176,8 +1483,9 @@ const App = {
     try {
       const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes);
       ScriptService.currentScript.content = text;
+      ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(text);
       this.updateEditorUI();
-      this.showToast('1분 쇼츠 대본 초안이 생성되었습니다! 🎬', 'success');
+      this.showToast('1분 쇼츠 대본 초안 및 2단 콘티가 생성되었습니다! 🎬', 'success');
       ScriptService.saveCurrent();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
@@ -1196,8 +1504,9 @@ const App = {
     try {
       const text = await GeminiService.generateLongFormScript(p, ScriptService.currentScript.notes);
       ScriptService.currentScript.content = text;
+      ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(text);
       this.updateEditorUI();
-      this.showToast('유튜브 롱폼 리뷰 대본이 생성되었습니다! 🎥', 'success');
+      this.showToast('유튜브 롱폼 리뷰 대본 및 2단 콘티가 생성되었습니다! 🎥', 'success');
       ScriptService.saveCurrent();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
@@ -1265,6 +1574,11 @@ const App = {
     if (!tpl) return;
     const content = p ? TemplateService.applyVariables(tpl.content, p) : tpl.content;
     ScriptService.currentScript.content = content;
+    if (tpl.storyboard && Array.isArray(tpl.storyboard)) {
+      ScriptService.currentScript.storyboard = p ? TemplateService.applyVariablesToStoryboard(tpl.storyboard, p) : JSON.parse(JSON.stringify(tpl.storyboard));
+    } else {
+      ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(content);
+    }
     this.updateEditorUI();
     this.showToast(`[${tpl.title}] 템플릿 적용 완료!`, 'success');
     this.debounceAutoSave();
@@ -1273,7 +1587,7 @@ const App = {
   switchEditorTab(t) {
     document.querySelectorAll('.editor-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
     document.querySelectorAll('.editor-pane').forEach(p => p.classList.remove('active'));
-    document.getElementById(`editorPane_${t}`).classList.add('active');
+    document.getElementById(`editorPane_${t}`)?.classList.add('active');
   },
 
   updateEditorUI() {
@@ -1284,11 +1598,13 @@ const App = {
     document.getElementById('notepadContent').value = s.notes || '';
     document.getElementById('subtitlesOutput').textContent = s.subtitles || '대본 툴바의 [자막 분할] 버튼을 누르면 타임라인 자막이 생성됩니다.';
     document.getElementById('videoPromptsOutput').textContent = s.videoPrompts || '대본 툴바의 [AI 영상 프롬프트] 버튼을 누르면 Runway/Kling용 프롬프트가 생성됩니다.';
+    this.renderStoryboardTable();
     this.updateStats();
   },
 
   updateStats() {
-    const stats = ScriptService.calculateStats(ScriptService.currentScript.content);
+    const s = ScriptService.currentScript;
+    const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
     document.getElementById('statCharCount').textContent = `${stats.charCountWithSpaces}자`;
     document.getElementById('statDuration').textContent = stats.timeFormatted;
     const badge = document.getElementById('statBadge');
@@ -1297,6 +1613,218 @@ const App = {
     const fill = document.getElementById('statProgressFill');
     fill.style.width = `${stats.percentage}%`;
     fill.style.background = stats.progressColor;
+    this.updatePrintHeader();
+  },
+
+  // 🎬 Storyboard Table Renderer & Management
+  renderStoryboardTable() {
+    const tbody = document.getElementById('storyboardTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const rows = ScriptService.currentScript?.storyboard || [];
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">콘티 행이 없습니다. 상단의 [➕ 행 추가] 또는 [📋 엑셀 붙여넣기]를 눌러보세요.</td></tr>`;
+      this.updatePrintHeader();
+      return;
+    }
+
+    rows.forEach((r, idx) => {
+      const tr = document.createElement('tr');
+      tr.dataset.index = idx;
+
+      // 1. 구성 (Section Dropdown)
+      const tdSec = document.createElement('td');
+      tdSec.style.textAlign = 'center';
+      const secSelect = document.createElement('select');
+      secSelect.className = 'sb-select-section';
+      ['도입', '본문', '엔딩'].forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec;
+        opt.textContent = sec;
+        if ((r.section || '본문') === sec) opt.selected = true;
+        secSelect.appendChild(opt);
+      });
+      secSelect.addEventListener('change', (e) => {
+        r.section = e.target.value;
+        this.debounceAutoSave();
+      });
+      tdSec.appendChild(secSelect);
+
+      // 2. 번호 (Row Number)
+      const tdNum = document.createElement('td');
+      tdNum.className = 'sb-row-no';
+      tdNum.textContent = r.num !== undefined ? r.num : (idx + 1);
+
+      // 3. 대본 (Script Cell - editable)
+      const tdScript = document.createElement('td');
+      const divScript = document.createElement('div');
+      divScript.className = 'sb-cell-editable sb-cell-script';
+      divScript.contentEditable = 'true';
+      divScript.textContent = r.script || '';
+      divScript.addEventListener('input', () => {
+        r.script = divScript.innerText;
+        this.updateStats();
+        this.debounceAutoSave();
+      });
+      tdScript.appendChild(divScript);
+
+      // 4. 장면 (Scene Cell - editable)
+      const tdScene = document.createElement('td');
+      const divScene = document.createElement('div');
+      divScene.className = 'sb-cell-editable sb-cell-scene';
+      divScene.contentEditable = 'true';
+      divScene.textContent = r.scene || '';
+      divScene.addEventListener('input', () => {
+        r.scene = divScene.innerText;
+        this.debounceAutoSave();
+      });
+      tdScene.appendChild(divScene);
+
+      // 5. 관리 (Actions Cell)
+      const tdAct = document.createElement('td');
+      tdAct.className = 'col-actions';
+      tdAct.innerHTML = `
+        <div style="display: flex; gap: 2px; justify-content: center;">
+          <button class="btn-row-action up" title="위로 이동" ${idx === 0 ? 'disabled style="opacity:0.3"' : ''}>▲</button>
+          <button class="btn-row-action down" title="아래로 이동" ${idx === rows.length - 1 ? 'disabled style="opacity:0.3"' : ''}>▼</button>
+          <button class="btn-row-action delete" title="행 삭제" style="color: #f87171;">✕</button>
+        </div>
+      `;
+
+      tdAct.querySelector('.up')?.addEventListener('click', () => this.moveStoryboardRow(idx, -1));
+      tdAct.querySelector('.down')?.addEventListener('click', () => this.moveStoryboardRow(idx, 1));
+      tdAct.querySelector('.delete')?.addEventListener('click', () => this.deleteStoryboardRow(idx));
+
+      tr.appendChild(tdSec);
+      tr.appendChild(tdNum);
+      tr.appendChild(tdScript);
+      tr.appendChild(tdScene);
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    });
+
+    this.updatePrintHeader();
+  },
+
+  addStoryboardRow(section = '본문', script = '', scene = '') {
+    if (!ScriptService.currentScript.storyboard) {
+      ScriptService.currentScript.storyboard = [];
+    }
+    const rows = ScriptService.currentScript.storyboard;
+    const nextNum = rows.length > 0 ? (Math.max(...rows.map(r => parseInt(r.num, 10) || 0)) + 1) : 1;
+    const newRow = { section, num: nextNum, script, scene };
+    rows.push(newRow);
+    this.renderStoryboardTable();
+    this.updateStats();
+    this.debounceAutoSave();
+
+    const lastRowDiv = document.querySelector('#storyboardTableBody tr:last-child .sb-cell-script');
+    if (lastRowDiv) {
+      lastRowDiv.focus();
+    }
+  },
+
+  deleteStoryboardRow(idx) {
+    const rows = ScriptService.currentScript?.storyboard;
+    if (!rows || idx < 0 || idx >= rows.length) return;
+    rows.splice(idx, 1);
+    this.renderStoryboardTable();
+    this.updateStats();
+    this.debounceAutoSave();
+    this.showToast('콘티 행이 삭제되었습니다.');
+  },
+
+  moveStoryboardRow(idx, dir) {
+    const rows = ScriptService.currentScript?.storyboard;
+    if (!rows) return;
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx >= rows.length) return;
+    const temp = rows[idx];
+    rows[idx] = rows[targetIdx];
+    rows[targetIdx] = temp;
+    this.renderStoryboardTable();
+    this.debounceAutoSave();
+  },
+
+  copyStoryboardToExcel() {
+    const rows = ScriptService.currentScript?.storyboard || [];
+    if (rows.length === 0) {
+      this.showToast('복사할 콘티 표가 없습니다.', 'error');
+      return;
+    }
+    const header = ['구성', '번호', '대본', '장면'].join('\t');
+    const lines = rows.map(r => {
+      const scr = (r.script || '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+      const scn = (r.scene || '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+      return [r.section || '본문', r.num, scr, scn].join('\t');
+    });
+    const tsv = header + '\n' + lines.join('\n');
+    navigator.clipboard.writeText(tsv).then(() => {
+      this.showToast('콘티 표가 엑셀 형식으로 복사되었습니다! 엑셀에서 Ctrl+V 하세요. 📋', 'success');
+    }).catch(() => {
+      this.showToast('클립보드 복사 실패', 'error');
+    });
+  },
+
+  syncScriptToStoryboard() {
+    const content = ScriptService.currentScript?.content || '';
+    if (!content.trim()) {
+      this.showToast('변환할 대본 줄글이 없습니다.', 'error');
+      return;
+    }
+    const rows = ScriptService.textToStoryboard(content);
+    if (rows.length === 0) {
+      this.showToast('변환 가능한 문장이 없습니다.', 'error');
+      return;
+    }
+    ScriptService.currentScript.storyboard = rows;
+    this.renderStoryboardTable();
+    this.switchEditorTab('storyboard');
+    this.updateStats();
+    this.debounceAutoSave();
+    this.showToast(`대본 줄글을 콘티 표(${rows.length}개 행)로 변환했습니다! 🎬`, 'success');
+  },
+
+  syncStoryboardToScript() {
+    const rows = ScriptService.currentScript?.storyboard || [];
+    if (rows.length === 0) {
+      this.showToast('동기화할 콘티 표가 없습니다.', 'error');
+      return;
+    }
+    const text = ScriptService.storyboardToText(rows);
+    ScriptService.currentScript.content = text;
+    document.getElementById('scriptContent').value = text;
+    this.switchEditorTab('script');
+    this.updateStats();
+    this.debounceAutoSave();
+    this.showToast('콘티 표의 내용을 대본 줄글로 동기화했습니다! ✍️', 'success');
+  },
+
+  updatePrintHeader() {
+    const s = ScriptService.currentScript;
+    if (!s) return;
+    const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
+    const prodName = s.product ? `[${s.product.brandNm}] ${s.product.productNm}` : '일신비츠온 정품';
+    const elTitle = document.getElementById('sbPrintTitle');
+    const elProd = document.getElementById('sbPrintProduct');
+    const elDur = document.getElementById('sbPrintDuration');
+    const elChar = document.getElementById('sbPrintChar');
+    const elDate = document.getElementById('sbPrintDate');
+
+    if (elTitle) elTitle.textContent = s.title || '콘텐츠 제작 2단 콘티';
+    if (elProd) elProd.textContent = `제품: ${prodName}`;
+    if (elDur) elDur.textContent = `예상 소요 시간: ${stats.timeFormatted}`;
+    if (elChar) elChar.textContent = `글자 수: ${stats.charCountWithSpaces}자 (${s.storyboard?.length || 0}개 씬)`;
+    if (elDate) elDate.textContent = `(주)일신비츠온 콘텐츠랩 • ${new Date().toLocaleDateString('ko-KR')}`;
+  },
+
+  printStoryboard() {
+    this.switchEditorTab('storyboard');
+    this.updatePrintHeader();
+    setTimeout(() => {
+      window.print();
+    }, 150);
   },
 
   debounceAutoSave() {
@@ -1323,7 +1851,7 @@ const App = {
     }
 
     filtered.forEach(s => {
-      const stats = ScriptService.calculateStats(s.content);
+      const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
       const card = document.createElement('div');
       card.className = 'script-card';
       const dateStr = s.updatedAt ? new Date(s.updatedAt).toLocaleDateString('ko-KR') : '';
@@ -1347,6 +1875,11 @@ const App = {
 
       card.querySelector('.btn-load').addEventListener('click', () => {
         ScriptService.currentScript = { ...s };
+        if (!ScriptService.currentScript.storyboard || ScriptService.currentScript.storyboard.length === 0) {
+          if (ScriptService.currentScript.content) {
+            ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(ScriptService.currentScript.content);
+          }
+        }
         if (s.product) {
           const m = ProductService.getByCode(s.product.productCode);
           if (m) ProductService.currentSelected = m;
