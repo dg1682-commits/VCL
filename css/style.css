@@ -1396,3 +1396,342 @@ button {
   border-color: #3b82f6;
 }
 
+/* ========================================================
+   2-COLUMN STORYBOARD TABLE EDITOR & PRINT SYSTEM
+   ======================================================== */
+.storyboard-toolbar {
+  padding: 10px 14px;
+  background: var(--bg-card-sub);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.storyboard-tools-left, .storyboard-tools-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-sb-tool {
+  background: #1e293b;
+  border: 1px solid var(--border-subtle);
+  color: #e2e8f0;
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-sb-tool:hover {
+  background: #334155;
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.btn-sb-print {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border: 1px solid #38bdf8;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-sb-print:hover {
+  background: linear-gradient(135deg, #0369a1, #075985);
+  transform: translateY(-1px);
+}
+
+.storyboard-table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 14px;
+  background: #0b0f19;
+}
+
+.storyboard-print-header {
+  display: none;
+}
+
+.storyboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-size: 0.84rem;
+}
+
+.storyboard-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  font-weight: 700;
+  text-align: center;
+  padding: 9px 10px;
+  border-bottom: 2px solid var(--border-subtle);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.storyboard-table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: top;
+}
+
+.storyboard-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sb-select-section {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid var(--border-subtle);
+  color: #fbbf24;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sb-row-no {
+  font-weight: 700;
+  color: #94a3b8;
+  text-align: center;
+  padding-top: 6px;
+}
+
+.sb-cell-editable {
+  width: 100%;
+  min-height: 44px;
+  padding: 5px 7px;
+  background: transparent;
+  color: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  outline: none;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: all 0.15s ease;
+}
+
+.sb-cell-editable:focus {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.sb-cell-scene {
+  color: #38bdf8;
+}
+
+.sb-row-actions {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.btn-row-action {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 3px 5px;
+  font-size: 0.75rem;
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+
+.btn-row-action:hover {
+  background: #334155;
+  color: #fff;
+}
+
+.btn-row-action.delete:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ========================================================
+   PRINT STYLING (A4 1장 최적 맞춤)
+   ======================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 8mm 8mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 8pt !important;
+    line-height: 1.22 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide all web interface components */
+  .vcl-header,
+  .rec-bar-header,
+  .rec-cards-strip,
+  .product-search-bar,
+  .left-pane,
+  .studio-top-bar,
+  .studio-toolbar,
+  .editor-tab-strip,
+  .storyboard-toolbar,
+  .col-actions,
+  .btn-row-action,
+  .modal-overlay,
+  #toastContainer,
+  #view_storage,
+  #view_templates,
+  #editorPane_script,
+  #editorPane_notes,
+  #editorPane_subtitles,
+  #editorPane_prompts {
+    display: none !important;
+  }
+
+  .view-container,
+  .studio-layout,
+  .right-pane,
+  .editor-area-wrapper,
+  #editorPane_storyboard,
+  .storyboard-table-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* Print Header (Excel Style) */
+  .storyboard-print-header {
+    display: block !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 4px !important;
+    border-bottom: 2px solid #000000 !important;
+  }
+
+  .storyboard-print-header h2 {
+    font-size: 13pt !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
+    margin: 0 0 4px 0 !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .sb-print-meta {
+    font-size: 8pt !important;
+    color: #333333 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    font-weight: 600 !important;
+  }
+
+  /* Print Table (Excel Exact Replica) */
+  .storyboard-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5px solid #000000 !important;
+    background: #ffffff !important;
+    table-layout: fixed !important;
+    page-break-inside: auto !important;
+  }
+
+  .storyboard-table tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .storyboard-table th {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    font-size: 8.5pt !important;
+    text-align: center !important;
+    border: 1px solid #000000 !important;
+    padding: 3px 5px !important;
+  }
+
+  .storyboard-table td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    padding: 3px 5px !important;
+    font-size: 7.8pt !important;
+    line-height: 1.2 !important;
+    vertical-align: middle !important;
+    word-break: break-word !important;
+  }
+
+  .sb-select-section {
+    border: none !important;
+    background: transparent !important;
+    color: #000000 !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    padding: 0 !important;
+    text-align: center !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+
+  .sb-row-no {
+    color: #000000 !important;
+    font-weight: 800 !important;
+    font-size: 8pt !important;
+    text-align: center !important;
+  }
+
+  .sb-cell-editable {
+    color: #000000 !important;
+    font-size: 7.8pt !important;
+    line-height: 1.2 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    white-space: pre-wrap !important;
+  }
+
+  .sb-cell-scene {
+    color: #111827 !important;
+    font-weight: 500 !important;
+  }
+}
+
