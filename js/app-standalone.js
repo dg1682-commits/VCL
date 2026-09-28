@@ -333,13 +333,29 @@ const ProductService = {
   search(q) {
     if (!q || !q.trim()) return [];
     const term = q.trim().toLowerCase();
-    return this.products.filter(p => {
+    const matches = this.products.filter(p => {
       return (p.productNm && p.productNm.toLowerCase().includes(term)) ||
-             (p.productCode && p.productCode.includes(term)) ||
+             (p.productCode && String(p.productCode).toLowerCase().includes(term)) ||
              (p.modelName && p.modelName.toLowerCase().includes(term)) ||
              (p.standard && p.standard.toLowerCase().includes(term)) ||
              (p.brandNm && p.brandNm.toLowerCase().includes(term));
-    }).slice(0, 20);
+    });
+
+    // Exact match & brand prioritization (비츠온 1순위, 홈빛 2순위)
+    matches.sort((a, b) => {
+      const aCode = String(a.productCode).toLowerCase();
+      const bCode = String(b.productCode).toLowerCase();
+      if (aCode === term && bCode !== term) return -1;
+      if (bCode === term && aCode !== term) return 1;
+
+      const brandScore = brand => (brand === '비츠온' ? 3 : brand === '홈빛' ? 2 : 1);
+      const scoreDiff = brandScore(b.brandNm) - brandScore(a.brandNm);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      return 0;
+    });
+
+    return matches.slice(0, 30);
   },
 
   getByCode(c) {
@@ -711,7 +727,7 @@ const App = {
         this.selectProduct(results[0]);
         this.showToast(`검색 결과 ${results.length}건 중 상위 5건을 표시합니다.`);
       } else {
-        this.showToast('일치하는 상품이 없습니다.', 'error');
+        this.renderSearchFallback(q);
       }
     };
     btnSearch.addEventListener('click', doSearch);
@@ -838,6 +854,72 @@ const App = {
       this.renderTemplateList();
       this.renderTemplateDropdown();
     });
+
+    // Quick Add Custom Product Handlers
+    document.getElementById('btnOpenQuickProductModal')?.addEventListener('click', () => {
+      const q = document.getElementById('productSearchInput')?.value.trim() || '';
+      this.openQuickProductModal(q);
+    });
+
+    document.getElementById('btnCloseCustomProductModal')?.addEventListener('click', () => {
+      document.getElementById('customProductModal')?.classList.remove('active');
+    });
+
+    document.getElementById('btnSaveCustomProduct')?.addEventListener('click', () => {
+      const name = document.getElementById('cpInputName').value.trim();
+      const brand = document.getElementById('cpSelectBrand').value;
+      const code = document.getElementById('cpInputCode').value.trim();
+      const standard = document.getElementById('cpInputStandard').value.trim();
+      const specsRaw = document.getElementById('cpInputSpecs').value.trim();
+
+      if (!name) {
+        alert('제품명을 입력해주세요.');
+        return;
+      }
+
+      // Parse specs lines
+      const specsObj = {};
+      if (specsRaw) {
+        specsRaw.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+          const colonIdx = trimmed.indexOf(':');
+          if (colonIdx > 0) {
+            const k = trimmed.substring(0, colonIdx).trim();
+            const v = trimmed.substring(colonIdx + 1).trim();
+            if (k && v) specsObj[k] = v;
+          } else {
+            specsObj[`특징_${Object.keys(specsObj).length + 1}`] = trimmed;
+          }
+        });
+      }
+
+      const generatedCode = code || ('CUSTOM_' + Date.now().toString().slice(-6));
+      const customP = {
+        productCode: generatedCode,
+        productNm: name,
+        brandNm: brand,
+        modelName: code || '직접입력',
+        standard: standard || (brand + ' 정품'),
+        pictureNm: 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg',
+        maker: brand,
+        unitPrice: '-',
+        weightKg: '-',
+        icons: '<span class="basic_ic" style="background:#10b981; color:#fff;">직접등록</span>',
+        specs: specsObj,
+        detailImages: [],
+        detailUrl: code ? `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${code}` : ''
+      };
+
+      if (window.VCL_PRODUCTS) {
+        window.VCL_PRODUCTS.unshift(customP);
+      }
+
+      document.getElementById('customProductModal')?.classList.remove('active');
+      this.selectProduct(customP);
+      this.renderRecommendationCards([customP, ...ProductService.products.slice(0, 4)]);
+      this.showToast(`[${name}] 제품이 성공적으로 등록되어 기획 스튜디오에 선택되었습니다! 🚀`, 'success');
+    });
   },
 
   switchView(v) {
@@ -875,6 +957,66 @@ const App = {
       `;
       card.addEventListener('click', () => this.selectProduct(item));
       strip.appendChild(card);
+    });
+  },
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  },
+
+  openQuickProductModal(prefill = '') {
+    const modal = document.getElementById('customProductModal');
+    if (!modal) return;
+
+    const isNumeric = /^\d{3,8}$/.test(prefill);
+    document.getElementById('cpInputName').value = isNumeric ? '' : prefill;
+    document.getElementById('cpInputCode').value = isNumeric ? prefill : '';
+    document.getElementById('cpInputStandard').value = '';
+    document.getElementById('cpInputSpecs').value = '';
+
+    const hint = document.getElementById('cpMroLinkHint');
+    if (isNumeric && hint) {
+      hint.innerHTML = `<a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${prefill}" target="_blank" style="color: #60a5fa; text-decoration: underline;">비츠온MRO 상품페이지 열기 ↗</a>`;
+    } else if (hint) {
+      hint.innerHTML = '';
+    }
+
+    modal.classList.add('active');
+  },
+
+  renderSearchFallback(q) {
+    const strip = document.getElementById('recCardsStrip');
+    strip.innerHTML = '';
+
+    const isNumeric = /^\d{3,8}$/.test(q);
+    const mroUrl = isNumeric 
+      ? `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${q}`
+      : `https://vitsonmro.com/mro/shop/productList.do?keyword=${encodeURIComponent(q)}`;
+
+    const card = document.createElement('div');
+    card.className = 'search-fallback-card';
+    card.innerHTML = `
+      <div class="fallback-badge">⚡ 비츠온MRO 하이브리드 연동 & AI 즉시 기획</div>
+      <h4 class="fallback-title">🔍 '${this.escapeHtml(q)}' 검색 결과 (VCL 로컬 DB 미포함)</h4>
+      <p class="fallback-desc">
+        현재 로컬 DB에 등록되지 않은 비츠온/홈빛/MRO 상품입니다.<br>
+        <strong>비츠온MRO 공식몰</strong>에서 실시간 확인하거나, 아래 <strong>[새 제품 정보 직접 입력]</strong>을 통해 제원을 붙여넣고 즉시 쇼츠/롱폼 대본을 작성할 수 있습니다.
+      </p>
+      <div class="fallback-actions">
+        <a href="${mroUrl}" target="_blank" rel="noopener noreferrer" class="btn-mro-view-lg">
+          🛒 비츠온MRO에서 ${isNumeric ? `상품코드 [${q}]` : `'${this.escapeHtml(q)}'`} 바로보기 ↗
+        </a>
+        <button id="btnOpenQuickAddFromFallback" class="btn-quick-add-lg">
+          ➕ 이 제품 정보 직접 등록 & AI 즉시 기획 🚀
+        </button>
+      </div>
+    `;
+
+    strip.appendChild(card);
+
+    document.getElementById('btnOpenQuickAddFromFallback')?.addEventListener('click', () => {
+      this.openQuickProductModal(q);
     });
   },
 
@@ -940,15 +1082,42 @@ const App = {
     // Images
     const imgGal = document.getElementById('detailImagesGallery');
     imgGal.innerHTML = '';
-    if (p.detailImages && p.detailImages.length > 0) {
+    const hasDetailImgs = p.detailImages && p.detailImages.length > 0;
+
+    if (hasDetailImgs) {
+      const topBar = document.createElement('div');
+      topBar.style.cssText = 'grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.82rem; color: var(--text-muted); background: rgba(15, 23, 42, 0.6); padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-subtle);';
+      topBar.innerHTML = `
+        <span>📷 총 <strong>${p.detailImages.length}개</strong>의 고해상도 상세 이미지 (클릭 시 확대)</span>
+        <a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${p.productCode}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">비츠온MRO 원본 보기 ↗</a>
+      `;
+      imgGal.appendChild(topBar);
+
       p.detailImages.forEach(src => {
         const im = document.createElement('img');
         im.className = 'detail-gallery-img';
         im.src = src;
+        im.loading = 'lazy';
+        im.title = '클릭하여 새 탭에서 원본 크기로 보기';
+        im.onerror = () => { im.style.display = 'none'; };
+        im.onclick = () => window.open(src, '_blank');
         imgGal.appendChild(im);
       });
     } else {
-      imgGal.innerHTML = `<div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">등록된 추가 상세 이미지가 없습니다.<br><a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${p.productCode}" target="_blank" style="color: #60a5fa; text-decoration: underline; margin-top: 6px; display: inline-block;">비츠온MRO 공식 상세페이지에서 확인 ↗</a></div>`;
+      const mainImgSrc = p.pictureNm || 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg';
+      imgGal.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 20px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 12px; font-weight: 600;">
+            📌 <strong>MRO 공식 대표 이미지</strong> (추가 상세 이미지 미등록 품목)
+          </div>
+          <img src="${mainImgSrc}" style="max-height: 250px; border-radius: 8px; margin: 0 auto; display: block; border: 1px solid var(--border-subtle); cursor: zoom-in;" onerror="this.src='https://vitsonimg.co.kr/images/productsNew/preparing.jpg'" onclick="window.open('${mainImgSrc}', '_blank')" title="클릭하여 원본 크기로 새 탭에서 보기" />
+          <div style="margin-top: 14px;">
+            <a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${p.productCode}" target="_blank" class="btn-mro-view" style="display: inline-block; padding: 7px 16px; font-size: 0.82rem; text-decoration: none; border-radius: 6px;">
+              🛒 비츠온MRO 공식몰에서 상세 도면 / 인증서 전체 확인 ↗
+            </a>
+          </div>
+        </div>
+      `;
     }
 
     document.getElementById('aiAnalysisResult').innerHTML = `<div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">아래 <strong>[Gemini AI 제품 분석 실행]</strong> 버튼을 누르면<br>스펙 기반 핵심 셀링포인트, 타겟층, 바이럴 훅 5종이 도출됩니다.</div>`;
