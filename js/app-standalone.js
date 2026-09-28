@@ -769,13 +769,62 @@ const ScriptService = {
 
   parseExcelText(rawText) {
     if (!rawText || !rawText.trim()) return [];
-    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    // 1. Parse TSV respecting quotes and internal newlines (RFC 4180 state machine)
+    const matrix = [];
+    let currentRow = [];
+    let currentCell = '';
+    let inQuotes = false;
+    const text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const nextChar = text[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote: "" -> "
+          currentCell += '"';
+          i++;
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === '\t' && !inQuotes) {
+        // Tab column delimiter outside quotes
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+      } else if (char === '\n' && !inQuotes) {
+        // Row delimiter outside quotes
+        currentRow.push(currentCell.trim());
+        if (currentRow.some(c => Boolean(c))) {
+          matrix.push(currentRow);
+        }
+        currentRow = [];
+        currentCell = '';
+      } else {
+        currentCell += char;
+      }
+    }
+    // Push remaining cell/row
+    if (currentCell || currentRow.length > 0) {
+      currentRow.push(currentCell.trim());
+      if (currentRow.some(c => Boolean(c))) {
+        matrix.push(currentRow);
+      }
+    }
+
     const rows = [];
     let autoNum = 1;
 
-    for (let line of lines) {
-      const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
-      if (cols.some(c => c === '대본' || c === '구성' || c === '장면' || c === '내용')) continue;
+    for (let cols of matrix) {
+      // Strip outer quotes if remaining, and trim
+      cols = cols.map(c => c.replace(/^"|"$/g, '').trim());
+
+      // Skip header row if it contains column labels
+      if (cols.some(c => c === '대본' || c === '구성' || c === '장면' || c === '내용' || c === '번호')) {
+        continue;
+      }
       if (cols.length === 0 || (cols.length === 1 && !cols[0])) continue;
 
       let section = '본문';
@@ -794,7 +843,7 @@ const ScriptService = {
           script = cols[1] || '';
           scene = cols[2] || '';
         } else {
-          section = cols[0];
+          section = cols[0] || '본문';
           script = cols[1] || '';
           scene = cols[2] || '';
         }
@@ -941,7 +990,243 @@ const ScriptService = {
   }
 };
 
-// 6. UI App Controller
+// 6. Floating Progress Indicator Controller (Bottom-Left)
+const ProgressIndicator = {
+  activeTimer: null,
+
+  start(title, initialSub = '작업 준비 중...', icon = '⚡') {
+    const widget = document.getElementById('floatingProgressWidget');
+    if (!widget) return;
+    clearInterval(this.activeTimer);
+
+    const iconEl = document.getElementById('fpwIcon');
+    const titleEl = document.getElementById('fpwTitle');
+    const subEl = document.getElementById('fpwSub');
+    const percentEl = document.getElementById('fpwPercent');
+    const fillEl = document.getElementById('fpwProgressFill');
+
+    if (iconEl) iconEl.textContent = icon;
+    if (titleEl) titleEl.textContent = title;
+    if (subEl) subEl.textContent = initialSub;
+    if (percentEl) percentEl.textContent = '8%';
+    if (fillEl) {
+      fillEl.style.width = '8%';
+      fillEl.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)';
+    }
+
+    widget.classList.add('active');
+
+    // Simulate progress smoothly from 8% up to ~88%
+    let currentPct = 8;
+    this.activeTimer = setInterval(() => {
+      if (currentPct < 40) currentPct += Math.floor(Math.random() * 8) + 4;
+      else if (currentPct < 72) currentPct += Math.floor(Math.random() * 4) + 2;
+      else if (currentPct < 90) currentPct += 1;
+      this.setProgress(currentPct);
+    }, 300);
+  },
+
+  setProgress(pct, subText = null) {
+    const clamped = Math.min(100, Math.max(0, Math.round(pct)));
+    const percentEl = document.getElementById('fpwPercent');
+    const fillEl = document.getElementById('fpwProgressFill');
+    const subEl = document.getElementById('fpwSub');
+    if (percentEl) percentEl.textContent = `${clamped}%`;
+    if (fillEl) fillEl.style.width = `${clamped}%`;
+    if (subText && subEl) subEl.textContent = subText;
+  },
+
+  complete(msg = '작업이 완료되었습니다! 👍') {
+    clearInterval(this.activeTimer);
+    this.setProgress(100, msg);
+    const widget = document.getElementById('floatingProgressWidget');
+    if (!widget) return;
+    setTimeout(() => {
+      widget.classList.remove('active');
+    }, 1500);
+  },
+
+  error(msg = '작업 중 오류가 발생했습니다.') {
+    clearInterval(this.activeTimer);
+    const subEl = document.getElementById('fpwSub');
+    if (subEl) subEl.textContent = msg;
+    const fillEl = document.getElementById('fpwProgressFill');
+    if (fillEl) fillEl.style.background = '#ef4444';
+    const widget = document.getElementById('floatingProgressWidget');
+    setTimeout(() => {
+      widget?.classList.remove('active');
+      if (fillEl) fillEl.style.background = '';
+    }, 3000);
+  }
+};
+
+// 7. MRO On-Demand Live Crawler Service
+const MroCrawlerService = {
+  getCachedProduct(code) {
+    try {
+      const cached = localStorage.getItem(`vcl_mro_crawl_${code}`);
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  },
+
+  saveCachedProduct(p) {
+    try {
+      localStorage.setItem(`vcl_mro_crawl_${p.productCode}`, JSON.stringify(p));
+    } catch (e) {}
+  },
+
+  async fetchProductByCode(code) {
+    const cleanCode = code.trim();
+    if (!cleanCode) throw new Error('상품코드를 입력해주세요.');
+
+    // 1. Check local cache first
+    const cached = this.getCachedProduct(cleanCode);
+    if (cached) return cached;
+
+    // 2. Fetch HTML via CORS proxy
+    const targetUrl = `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${encodeURIComponent(cleanCode)}`;
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+      `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`
+    ];
+
+    let html = '';
+    let lastError = null;
+
+    for (const proxyUrl of proxies) {
+      try {
+        const resp = await fetch(proxyUrl, { headers: { 'Accept': 'text/html' } });
+        if (resp.ok) {
+          const text = await resp.text();
+          if (text && text.includes('productCode')) {
+            html = text;
+            break;
+          }
+        }
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    if (!html || !html.includes('productCode')) {
+      throw new Error(`비츠온MRO에서 상품코드 [${cleanCode}]를 찾을 수 없거나 회원 전용 상품입니다.`);
+    }
+
+    // 3. Parse HTML
+    const product = this.parseMroHtml(html, cleanCode);
+    if (!product || !product.productNm) {
+      throw new Error('상품 제원을 추출하지 못했습니다.');
+    }
+
+    this.saveCachedProduct(product);
+    return product;
+  },
+
+  parseMroHtml(html, code) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Title / Name
+    let productNm = '';
+    const nmMatch = html.match(/productNm\s*:\s*['"]([^'"]+)['"]/);
+    if (nmMatch) productNm = nmMatch[1];
+    if (!productNm) {
+      const nameEl = doc.querySelector('.product-name, .vits-product-summary .product-name, h3.title, .pd-title');
+      if (nameEl) productNm = nameEl.textContent.trim();
+    }
+    if (!productNm) {
+      const ogTitle = doc.querySelector('meta[property="og:title"]');
+      if (ogTitle && ogTitle.content && !ogTitle.content.includes('온라인 쇼핑몰')) {
+        productNm = ogTitle.content.trim();
+      }
+    }
+    if (!productNm) productNm = `MRO 상품 [${code}]`;
+
+    // Picture
+    let pictureNm = '';
+    const picMatch = html.match(/pictureNm\s*:\s*['"]([^'"]+)['"]/);
+    if (picMatch) pictureNm = picMatch[1];
+    if (!pictureNm) {
+      const imgEl = doc.querySelector('.swiper-slide img[data-main-img], .pd-gallery img, .vits-deal-gallery img');
+      if (imgEl && imgEl.src) pictureNm = imgEl.src;
+    }
+    if (!pictureNm || pictureNm.includes('preparing')) {
+      pictureNm = `https://vitsonimg.co.kr/images/productsNew/${code.slice(0, 2)}/${code}.jpg`;
+    }
+
+    // Brand
+    let brandNm = '비츠온';
+    const brandMatch = html.match(/brandNm\s*:\s*['"]([^'"]+)['"]/);
+    if (brandMatch) brandNm = brandMatch[1];
+    else if (html.includes('홈빛')) brandNm = '홈빛';
+
+    // Model & Standard
+    let modelName = code;
+    const modelMatch = html.match(/modelName\s*:\s*['"]([^'"]+)['"]/);
+    if (modelMatch) modelName = modelMatch[1];
+
+    let standard = '';
+    const stdMatch = html.match(/standard\s*:\s*['"]([^'"]+)['"]/);
+    if (stdMatch) standard = stdMatch[1];
+
+    // Category Breadcrumbs
+    const crumbs = [];
+    doc.querySelectorAll('.vits-breadcrumb-menu a').forEach(a => {
+      const txt = a.textContent.trim();
+      if (txt && txt !== '홈') crumbs.push(txt);
+    });
+
+    // Detail Images
+    const detailImages = [];
+    const imgMatches = html.matchAll(/https:\/\/vitsonimg\.co\.kr\/images\/[^\s"'>]+/g);
+    const seen = new Set();
+    for (const m of imgMatches) {
+      let src = m[0].replace(/[\\)]+$/, '');
+      if (!seen.has(src) && !src.includes('preparing') && !src.includes('banner')) {
+        seen.add(src);
+        detailImages.push(src);
+      }
+    }
+
+    // Specs
+    const specs = {
+      '상품코드': code,
+      '브랜드': brandNm,
+      '모델명': modelName,
+      '규격': standard || 'MRO 정품 규격'
+    };
+
+    doc.querySelectorAll('.filter-box-item').forEach(item => {
+      const title = item.querySelector('.title-text')?.textContent.trim();
+      const activeChip = item.querySelector(`.filter-chip[data-product-code*="${code}"]`);
+      if (title && activeChip) {
+        specs[title] = activeChip.textContent.trim();
+      }
+    });
+
+    return {
+      productCode: code,
+      productNm: productNm,
+      brandNm: brandNm,
+      modelName: modelName,
+      standard: standard || (brandNm + ' 정품'),
+      pictureNm: pictureNm,
+      category1: crumbs[0] || 'MRO 크롤링',
+      category2: crumbs[1] || '실시간 수집 품목',
+      category3: crumbs[2] || '',
+      maker: brandNm,
+      unitPrice: '-',
+      weightKg: '-',
+      icons: '<span class="basic_ic" style="background:#2563eb; color:#fff;">MRO실시간</span>',
+      specs: specs,
+      detailImages: detailImages,
+      detailUrl: `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${code}`
+    };
+  }
+};
+
+// 8. UI App Controller
 const App = {
   saveTimer: null,
 
@@ -1203,6 +1488,17 @@ const App = {
       this.showToast(`[${name}] 제품이 성공적으로 등록되어 기획 스튜디오에 선택되었습니다! 🚀`, 'success');
     });
 
+    // 📢 Changelog Modal Handlers
+    document.getElementById('btnOpenChangelog')?.addEventListener('click', () => {
+      document.getElementById('changelogModal')?.classList.add('active');
+    });
+    document.getElementById('btnCloseChangelogModal')?.addEventListener('click', () => {
+      document.getElementById('changelogModal')?.classList.remove('active');
+    });
+    document.getElementById('btnCloseChangelogFooter')?.addEventListener('click', () => {
+      document.getElementById('changelogModal')?.classList.remove('active');
+    });
+
     // 📖 User Guide Modal Handlers
     document.getElementById('btnOpenUserGuide')?.addEventListener('click', () => {
       document.getElementById('userGuideModal')?.classList.add('active');
@@ -1212,6 +1508,28 @@ const App = {
     });
     document.getElementById('btnCloseUserGuideFooter')?.addEventListener('click', () => {
       document.getElementById('userGuideModal')?.classList.remove('active');
+    });
+
+    // 🖼️ Image Lightbox Modal Handlers
+    document.getElementById('btnCloseImageViewerModal')?.addEventListener('click', () => {
+      this.closeImageViewer();
+    });
+    document.getElementById('imageViewerModal')?.addEventListener('click', e => {
+      if (e.target.id === 'imageViewerModal') {
+        this.closeImageViewer();
+      }
+    });
+
+    // ESC Key to close all modals
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        this.closeImageViewer();
+        document.getElementById('changelogModal')?.classList.remove('active');
+        document.getElementById('userGuideModal')?.classList.remove('active');
+        document.getElementById('confirmScriptOverwriteModal')?.classList.remove('active');
+        document.getElementById('excelPasteModal')?.classList.remove('active');
+        document.getElementById('customProductModal')?.classList.remove('active');
+      }
     });
 
     // ⚠️ Script Overwrite Modal Close Handlers
@@ -1246,8 +1564,10 @@ const App = {
         alert('붙여넣을 엑셀 대본 내용을 입력해주세요.');
         return;
       }
+      ProgressIndicator.start('📋 엑셀 대본 표 변환', '셀 줄바꿈 보존 및 콘티 표 동기화 중...', '📋');
       const rows = ScriptService.parseExcelText(raw);
       if (rows.length === 0) {
+        ProgressIndicator.error('대본 행을 인식하지 못했습니다.');
         alert('인식 가능한 대본 행이 없습니다. 탭 또는 줄바꿈으로 구분된 텍스트를 입력해주세요.');
         return;
       }
@@ -1257,6 +1577,7 @@ const App = {
       this.updateStats();
       this.debounceAutoSave();
       document.getElementById('excelPasteModal')?.classList.remove('active');
+      ProgressIndicator.complete(`총 ${rows.length}개 씬을 콘티 표로 완벽 동기화했습니다!`);
       this.showToast(`엑셀 대본 ${rows.length}개 행을 콘티 표로 성공적으로 가져왔습니다! 📋`, 'success');
     });
 
@@ -1349,7 +1670,7 @@ const App = {
     const strip = document.getElementById('recCardsStrip');
     strip.innerHTML = '';
 
-    const isNumeric = /^\d{3,8}$/.test(q);
+    const isNumeric = /^\d{3,10}$/.test(q);
     const mroUrl = isNumeric 
       ? `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${q}`
       : `https://vitsonmro.com/mro/shop/productList.do?keyword=${encodeURIComponent(q)}`;
@@ -1361,23 +1682,70 @@ const App = {
       <h4 class="fallback-title">🔍 '${this.escapeHtml(q)}' 검색 결과 (VCL 로컬 DB 미포함)</h4>
       <p class="fallback-desc">
         현재 로컬 DB에 등록되지 않은 비츠온/홈빛/MRO 상품입니다.<br>
-        <strong>비츠온MRO 공식몰</strong>에서 실시간 확인하거나, 아래 <strong>[새 제품 정보 직접 입력]</strong>을 통해 제원을 붙여넣고 즉시 쇼츠/롱폼 대본을 작성할 수 있습니다.
+        <strong>비츠온MRO 공식몰</strong>에서 1초 만에 제원과 이미지를 실시간 수집하거나, 직접 입력하여 AI 대본을 작성할 수 있습니다.
       </p>
       <div class="fallback-actions">
+        ${isNumeric ? `
+          <button id="btnCrawlMroFallback" class="btn-mro-view-lg" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; cursor: pointer; color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);">
+            ⚡ 비츠온MRO에서 상품코드 [${q}] 실시간 스펙 긁어오기 🚀
+          </button>
+        ` : ''}
         <a href="${mroUrl}" target="_blank" rel="noopener noreferrer" class="btn-mro-view-lg">
-          🛒 비츠온MRO에서 ${isNumeric ? `상품코드 [${q}]` : `'${this.escapeHtml(q)}'`} 바로보기 ↗
+          🛒 MRO 공식몰에서 ${isNumeric ? `[${q}]` : `'${this.escapeHtml(q)}'`} 직접 열기 ↗
         </a>
         <button id="btnOpenQuickAddFromFallback" class="btn-quick-add-lg">
-          ➕ 이 제품 정보 직접 등록 & AI 즉시 기획 🚀
+          ➕ 제원 직접 입력 & AI 기획
         </button>
       </div>
     `;
 
     strip.appendChild(card);
 
+    document.getElementById('btnCrawlMroFallback')?.addEventListener('click', () => {
+      this.crawlMroProduct(q);
+    });
+
     document.getElementById('btnOpenQuickAddFromFallback')?.addEventListener('click', () => {
       this.openQuickProductModal(q);
     });
+  },
+
+  async crawlMroProduct(code) {
+    ProgressIndicator.start('🌐 비츠온MRO 실시간 크롤링', `상품코드 [${code}] 상세페이지 수집 중...`, '🌐');
+    try {
+      ProgressIndicator.setProgress(35, 'CORS 프록시 연결 및 MRO 페이지 로딩...');
+      const p = await MroCrawlerService.fetchProductByCode(code);
+      ProgressIndicator.setProgress(80, '제원 및 고해상도 이미지 파싱 완료...');
+      
+      if (window.VCL_PRODUCTS) {
+        window.VCL_PRODUCTS.unshift(p);
+      }
+      ProductService.currentRecommendations = [p, ...ProductService.currentRecommendations.slice(0, 4)];
+      this.renderRecommendationCards(ProductService.currentRecommendations);
+      this.selectProduct(p);
+      ProgressIndicator.complete(`[${p.productNm}] 수집 및 스튜디오 등록 완료!`);
+      this.showToast(`비츠온MRO에서 [${p.productNm}] 스펙을 성공적으로 긁어왔습니다! 🚀`, 'success');
+    } catch (err) {
+      ProgressIndicator.error(err.message);
+      this.showToast(`MRO 크롤링 실패: ${err.message}`, 'error');
+    }
+  },
+
+  openImageViewer(src, title = '제품 상세 이미지') {
+    const modal = document.getElementById('imageViewerModal');
+    const img = document.getElementById('imageViewerImg');
+    const titleEl = document.getElementById('imageViewerTitle');
+    const linkEl = document.getElementById('btnImageViewerOpenOriginal');
+    if (!modal || !img) return;
+
+    img.src = src;
+    if (titleEl) titleEl.textContent = title;
+    if (linkEl) linkEl.href = src;
+    modal.classList.add('active');
+  },
+
+  closeImageViewer() {
+    document.getElementById('imageViewerModal')?.classList.remove('active');
   },
 
   selectProduct(p) {
@@ -1408,7 +1776,12 @@ const App = {
     if (p.brandNm === '비츠온') badgeClass = 'badge-vitson';
     else if (p.brandNm === '홈빛') badgeClass = 'badge-homevit';
 
-    document.getElementById('detailMainImg').src = p.pictureNm || 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg';
+    const mainImgEl = document.getElementById('detailMainImg');
+    mainImgEl.src = p.pictureNm || 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg';
+    mainImgEl.style.cursor = 'zoom-in';
+    mainImgEl.title = '클릭하여 확대 모달로 보기';
+    mainImgEl.onclick = () => this.openImageViewer(mainImgEl.src, p.productNm);
+
     document.getElementById('detailBrandBadge').className = `detail-brand-badge ${badgeClass}`;
     document.getElementById('detailBrandBadge').textContent = p.brandNm;
     document.getElementById('detailTitle').textContent = p.productNm;
@@ -1448,7 +1821,7 @@ const App = {
       const topBar = document.createElement('div');
       topBar.style.cssText = 'grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.82rem; color: var(--text-muted); background: rgba(15, 23, 42, 0.6); padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border-subtle);';
       topBar.innerHTML = `
-        <span>📷 총 <strong>${p.detailImages.length}개</strong>의 고해상도 상세 이미지 (클릭 시 확대)</span>
+        <span>📷 총 <strong>${p.detailImages.length}개</strong>의 고해상도 상세 이미지 (클릭 시 확대 모달)</span>
         <a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${p.productCode}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">비츠온MRO 원본 보기 ↗</a>
       `;
       imgGal.appendChild(topBar);
@@ -1458,9 +1831,10 @@ const App = {
         im.className = 'detail-gallery-img';
         im.src = src;
         im.loading = 'lazy';
-        im.title = '클릭하여 새 탭에서 원본 크기로 보기';
+        im.title = '클릭하여 화면 중앙 모달로 크게 보기';
+        im.style.cursor = 'zoom-in';
         im.onerror = () => { im.style.display = 'none'; };
-        im.onclick = () => window.open(src, '_blank');
+        im.onclick = () => this.openImageViewer(src, `${p.productNm} 상세 이미지`);
         imgGal.appendChild(im);
       });
     } else {
@@ -1470,7 +1844,7 @@ const App = {
           <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 12px; font-weight: 600;">
             📌 <strong>MRO 공식 대표 이미지</strong> (추가 상세 이미지 미등록 품목)
           </div>
-          <img src="${mainImgSrc}" style="max-height: 250px; border-radius: 8px; margin: 0 auto; display: block; border: 1px solid var(--border-subtle); cursor: zoom-in;" onerror="this.src='https://vitsonimg.co.kr/images/productsNew/preparing.jpg'" onclick="window.open('${mainImgSrc}', '_blank')" title="클릭하여 원본 크기로 새 탭에서 보기" />
+          <img src="${mainImgSrc}" style="max-height: 250px; border-radius: 8px; margin: 0 auto; display: block; border: 1px solid var(--border-subtle); cursor: zoom-in;" onerror="this.src='https://vitsonimg.co.kr/images/productsNew/preparing.jpg'" onclick="App.openImageViewer('${mainImgSrc}', '${p.productNm}')" title="클릭하여 확대 모달로 보기" />
           <div style="margin-top: 14px;">
             <a href="https://vitsonmro.com/mro/shop/productDetail.do?productCode=${p.productCode}" target="_blank" class="btn-mro-view" style="display: inline-block; padding: 7px 16px; font-size: 0.82rem; text-decoration: none; border-radius: 6px;">
               🛒 비츠온MRO 공식몰에서 상세 도면 / 인증서 전체 확인 ↗
@@ -1546,14 +1920,17 @@ const App = {
     const btn = document.getElementById('btnRunAiAnalysis');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> Gemini가 제원 분석 중...`;
+    ProgressIndicator.start('✨ Gemini AI 제품 제원 분석', '핵심 USP 및 바이럴 훅 도출 중...', '✨');
 
     try {
       const res = await GeminiService.analyzeProduct(p);
       p.aiAnalysis = res;
       ProductService.currentAiAnalysis = res;
       this.renderAiAnalysisResult(res);
+      ProgressIndicator.complete('AI 제원 분석 완료! 🚀');
       this.showToast('AI 제원 분석이 완료되었습니다! 아래 버튼으로 대본을 즉시 작성할 수 있습니다. 🚀', 'success');
     } catch (e) {
+      ProgressIndicator.error('AI 분석 실패: ' + e.message);
       this.showToast('AI 분석 에러: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1571,6 +1948,7 @@ const App = {
     const btn = document.getElementById('btnAiShorts');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 훅 기반 대본 작성 중...`;
+    ProgressIndicator.start('🔥 바이럴 훅 기반 쇼츠 대본', '오프닝 문구 및 2단 콘티 대본 생성 중...', '🔥');
     try {
       const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
       const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes, aiAnalysis, hookText);
@@ -1582,9 +1960,11 @@ const App = {
       ScriptService.currentScript.title = `[쇼츠] ${p.brandNm} ${p.productNm} - ${hookText.slice(0, 15)}...`;
       this.updateEditorUI();
       this.switchEditorTab('script');
+      ProgressIndicator.complete('쇼츠 대본 작성 완료! ⚡');
       this.showToast(`선택하신 훅으로 쇼츠 대본이 [대본 줄글]에 성공적으로 작성되었습니다! ⚡`, 'success');
       this.debounceAutoSave();
     } catch (e) {
+      ProgressIndicator.error('쇼츠 대본 작성 실패: ' + e.message);
       this.showToast('쇼츠 대본 작성 에러: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1702,6 +2082,7 @@ const App = {
     const btn = document.getElementById('btnAiShorts');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 대본 작성 중...`;
+    ProgressIndicator.start('⚡ AI 쇼츠 대본 작성', '50초 숏폼 4단계 대본 작성 중...', '⚡');
     try {
       const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
       const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes, aiAnalysis);
@@ -1713,9 +2094,11 @@ const App = {
       this.updateEditorUI();
       this.switchEditorTab('script');
       const analysisNotice = aiAnalysis ? ' (✨ AI 제품 분석 결과 반영)' : '';
+      ProgressIndicator.complete('AI 쇼츠 대본 작성 완료! ⚡');
       this.showToast(`AI 쇼츠 대본이 [대본 줄글] 탭에 작성되었습니다! ✍️${analysisNotice}`, 'success');
       this.debounceAutoSave();
     } catch (e) {
+      ProgressIndicator.error('대본 생성 실패: ' + e.message);
       this.showToast('대본 생성 실패: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1729,6 +2112,7 @@ const App = {
     const btn = document.getElementById('btnAiLongform');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 롱폼 작성 중...`;
+    ProgressIndicator.start('🎥 AI 롱폼 대본 작성', '3~4분 유튜브 심층 리뷰 대본 작성 중...', '🎥');
     try {
       const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
       const text = await GeminiService.generateLongFormScript(p, ScriptService.currentScript.notes, aiAnalysis);
@@ -1740,9 +2124,11 @@ const App = {
       this.updateEditorUI();
       this.switchEditorTab('script');
       const analysisNotice = aiAnalysis ? ' (✨ AI 제품 분석 결과 반영)' : '';
+      ProgressIndicator.complete('AI 롱폼 대본 작성 완료! 🎥');
       this.showToast(`AI 롱폼 대본이 [대본 줄글] 탭에 작성되었습니다! ✍️${analysisNotice}`, 'success');
       this.debounceAutoSave();
     } catch (e) {
+      ProgressIndicator.error('대본 생성 실패: ' + e.message);
       this.showToast('대본 생성 실패: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1756,13 +2142,16 @@ const App = {
     const btn = document.getElementById('btnAiSubtitles');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 자막 분할 중...`;
+    ProgressIndicator.start('💬 자막 타임라인 분할', '대본 문장 단위 자막 분할 및 싱크 계산 중...', '💬');
     try {
       const sub = await GeminiService.generateSubtitles(c);
       ScriptService.currentScript.subtitles = sub;
       document.getElementById('subtitlesOutput').textContent = sub;
       this.switchEditorTab('subtitles');
+      ProgressIndicator.complete('자막 타임라인 분할 완료! 💬');
       this.showToast('자막 타임라인 분할 완료! 📝', 'success');
     } catch (e) {
+      ProgressIndicator.error('자막 분할 실패: ' + e.message);
       this.showToast('자막 분할 실패: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1777,13 +2166,16 @@ const App = {
     const btn = document.getElementById('btnAiVideoPrompts');
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 프롬프트 생성 중...`;
+    ProgressIndicator.start('🤖 AI 영상 프롬프트 생성', 'Runway/Kling 비디오 프롬프트 생성 중...', '🤖');
     try {
       const vp = await GeminiService.generateVideoPrompts(p, c);
       ScriptService.currentScript.videoPrompts = vp;
       document.getElementById('videoPromptsOutput').textContent = vp;
       this.switchEditorTab('prompts');
+      ProgressIndicator.complete('영상 프롬프트 생성 완료! 🤖');
       this.showToast('AI 비디오 프롬프트 생성 완료! 🤖', 'success');
     } catch (e) {
+      ProgressIndicator.error('프롬프트 생성 실패: ' + e.message);
       this.showToast('프롬프트 생성 실패: ' + e.message, 'error');
     } finally {
       btn.disabled = false;
@@ -1794,6 +2186,7 @@ const App = {
   insertSpecs(mode = 'append') {
     const p = ProductService.currentSelected;
     if (!p) { this.showToast('선택된 제품이 없습니다.', 'error'); return; }
+    ProgressIndicator.start('📋 제품 제원 요약', '제원 스펙 대본 줄글로 삽입 중...', '📋');
     const text = ProductService.getSpecsSummaryText(p);
     const cur = ScriptService.currentScript.content || '';
     if (mode === 'replace') {
@@ -1803,6 +2196,7 @@ const App = {
     }
     this.updateEditorUI();
     this.switchEditorTab('script');
+    ProgressIndicator.complete('제품 제원 요약 삽입 완료! 📋');
     this.showToast('제품 스펙이 [✍️ 대본 줄글] 탭에 추가되었습니다! 📋', 'success');
     this.debounceAutoSave();
   },
@@ -2012,8 +2406,10 @@ const App = {
       this.showToast('변환할 대본 줄글이 없습니다.', 'error');
       return;
     }
+    ProgressIndicator.start('🎬 줄글 ➔ 콘티 표 변환', '문장별 대본 및 촬영 구도 분석 중...', '🎬');
     const rows = ScriptService.textToStoryboard(content);
     if (rows.length === 0) {
+      ProgressIndicator.error('변환 가능한 문장이 없습니다.');
       this.showToast('변환 가능한 문장이 없습니다.', 'error');
       return;
     }
@@ -2022,6 +2418,7 @@ const App = {
     this.switchEditorTab('storyboard');
     this.updateStats();
     this.debounceAutoSave();
+    ProgressIndicator.complete(`콘티 표(${rows.length}개 행) 변환 완료!`);
     this.showToast(`대본 줄글을 콘티 표(${rows.length}개 행)로 변환했습니다! 🎬`, 'success');
   },
 
@@ -2031,12 +2428,14 @@ const App = {
       this.showToast('동기화할 콘티 표가 없습니다.', 'error');
       return;
     }
+    ProgressIndicator.start('✍️ 콘티 표 ➔ 줄글 동기화', '대본 줄글 텍스트 재구성 중...', '✍️');
     const text = ScriptService.storyboardToText(rows);
     ScriptService.currentScript.content = text;
     document.getElementById('scriptContent').value = text;
     this.switchEditorTab('script');
     this.updateStats();
     this.debounceAutoSave();
+    ProgressIndicator.complete('대본 줄글 동기화 완료! ✍️');
     this.showToast('콘티 표의 내용을 대본 줄글로 동기화했습니다! ✍️', 'success');
   },
 
