@@ -215,6 +215,7 @@
               <div class="storyboard-toolbar">
                 <div class="storyboard-tools-left">
                   <button id="btnAddStoryboardRow" class="btn-sb-tool" title="새로운 콘티 행 추가">➕ 행 추가</button>
+                  <button id="btnClearStoryboardTable" class="btn-sb-tool btn-sb-danger" title="콘티 표의 모든 내용을 지우고 기본 15칸 빈 표로 초기화">🗑️ 표 비우기</button>
                   <button id="btnOpenPasteExcelModal" class="btn-sb-tool" title="엑셀에서 복사한 대본 표 한 번에 붙여넣기">📋 엑셀 붙여넣기</button>
                   <button id="btnCopyStoryboardExcel" class="btn-sb-tool" title="엑셀에 그대로 붙여넣을 수 있게 복사">📤 엑셀로 복사</button>
                   <button id="btnSyncScriptToStoryboard" class="btn-sb-tool" title="[대본 줄글] 탭의 텍스트를 콘티 행으로 자동 분할">🔄 줄글 ➔ 표 변환</button>
@@ -529,6 +530,7 @@
             </div>
             <div class="guide-step-desc">
               콘티 표 안의 대본이나 장면 연출 칸을 마우스로 클릭해서 글자를 직접 타이핑하여 수정할 수 있습니다.<br>
+              <strong>[🗑️ 표 비우기]:</strong> 언제든 콘티를 새로 짜고 싶을 때 버튼 한 번으로 <strong>기본 15칸 빈 표(도입-본문-엔딩)</strong>로 말끔히 초기화할 수 있습니다. 행 번호는 무조건 1번부터 차례대로 자동 정렬됩니다.<br>
               최종 검토 후 <strong>[🖨️ A4 1장 깔끔 인쇄]</strong> 버튼을 클릭하면, <strong>A4 가로(Landscape) 1장에 맞춤 출력</strong>되어 촬영 현장 배포용으로 바로 출력/PDF 저장됩니다!
             </div>
           </div>
@@ -550,7 +552,7 @@
           <div class="guide-faq-grid">
             <div class="guide-faq-item">
               <div class="guide-faq-q">Q. 사내 전산팀 트래픽 문제는 없나요?</div>
-              <div class="guide-faq-a">비츠온/홈빛 532종 데이터가 사전에 내장되어 있어 검색 및 셔플 모두 <strong>사용자 컴퓨터 로컬에서만 100% 안전하게 동작</strong>합니다. MRO 실시간 크롤링은 발생하지 않습니다.</div>
+              <div class="guide-faq-a">비츠온/홈빛 532종 데이터가 사전에 내장되어 검색 및 셔플 모두 로컬에서 100% 안전하게 동작합니다. DB 외 신규 상품도 단 1회 크롤링 후 <strong>로컬 DB에 영구 등록</strong>되므로 중복 트래픽이 발생하지 않습니다.</div>
             </div>
             <div class="guide-faq-item">
               <div class="guide-faq-q">Q. 소요 시간은 어떻게 계산되나요?</div>
@@ -561,8 +563,8 @@
               <div class="guide-faq-a">A4 가로(Landscape) 최적화 여백과 표 자동 압축 스타일이 적용되어 있어 15~20행 분량도 <strong>잘림 없이 1장에 꼭 맞게</strong> 출력됩니다.</div>
             </div>
             <div class="guide-faq-item">
-              <div class="guide-faq-q">Q. 작성 중인 대본 저장 방법은?</div>
-              <div class="guide-faq-a">우측 상단 <strong>[💾 대본 저장]</strong> 버튼을 누르면 클라우드 보관함에 안전하게 저장되며, 언제든 [📂 대본 보관함] 탭에서 다시 열거나 복제할 수 있습니다.</div>
+              <div class="guide-faq-q">Q. 작성 중인 대본 저장 및 열람 방법은?</div>
+              <div class="guide-faq-a">우측 상단 <strong>[💾 대본 저장]</strong> 버튼으로 안전하게 저장됩니다. [📂 대본 보관함]에서 대본 카드를 클릭하면 <strong>[미리보기 팝업]</strong>이 먼저 열려 표 구조와 줄글을 확인한 뒤 스튜디오로 안전하게 불러올 수 있습니다.</div>
             </div>
           </div>
         </div>
@@ -574,6 +576,67 @@
     </div>
   </div>
 
+  <!-- MODAL: SCRIPT PREVIEW (대본 전체 미리보기) -->
+  <div id="scriptPreviewModal" class="modal-overlay">
+    <div class="modal-box script-preview-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">👁️</span>
+          <h3 id="previewModalTitle" style="margin: 0; font-size: 1.15rem; color: #fff;">대본 미리보기</h3>
+          <div id="previewModalBadges" style="display: flex; gap: 6px;"></div>
+        </div>
+        <button id="btnCloseScriptPreviewModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      
+      <div class="script-preview-meta" id="previewModalMeta">
+        <!-- Dynamic meta tags rendered via JS -->
+      </div>
+
+      <div class="script-preview-body">
+        <!-- Section 1: Storyboard Table -->
+        <div>
+          <div class="preview-section-title">
+            <span>🎬 2단 콘티(표) 구조 미리보기</span>
+            <span id="previewSbRowCount" style="font-size: 0.76rem; color: #94a3b8; font-weight: normal;">(0행)</span>
+          </div>
+          <div style="overflow-x: auto; max-height: 380px; border: 1px solid #334155; border-radius: 8px;">
+            <table class="preview-storyboard-table">
+              <thead>
+                <tr>
+                  <th style="width: 12%;">구성</th>
+                  <th style="width: 8%;">번호</th>
+                  <th style="width: 48%;">대본 (나레이션 / 대사)</th>
+                  <th style="width: 32%;">장면 (카메라 / 연출)</th>
+                </tr>
+              </thead>
+              <tbody id="previewStoryboardTbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: Script Text -->
+        <div>
+          <div class="preview-section-title">
+            <span>✍️ 대본 줄글 본문</span>
+          </div>
+          <div id="previewScriptText" class="preview-script-text">
+            (대본 본문 없음)
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: #94a3b8;">💡 미리보기 상태에서는 스튜디오의 작업 중인 대본이 변경되지 않습니다.</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnPreviewPrint" class="btn-card-action" style="padding: 7px 14px; font-size: 0.85rem; background: #334155; color: #f8fafc; border: 1px solid #475569; border-radius: 4px; cursor: pointer;">🖨️ 바로 인쇄</button>
+          <button id="btnPreviewLoadToStudio" class="btn-save-script" style="background: #2563eb; padding: 7px 16px;">✍️ 스튜디오로 불러오기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CHANGELOG / UPDATE HISTORY -->
   <div id="changelogModal" class="modal-overlay">
     <div class="modal-box changelog-modal-box">
@@ -581,18 +644,33 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">📢</span>
           <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">VCL-Light 최신 업데이트 내역</h3>
-          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.6 Live</span>
+          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.7 Live</span>
         </div>
         <button id="btnCloseChangelogModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
       </div>
       <div class="modal-body changelog-modal-body">
         
+        <!-- Ver 2.7 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.7</span>
+            <span class="changelog-date">2026.09.28 (최신)</span>
+            <span class="changelog-badge-new">NEW</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>💾 MRO 크롤링 상품 DB 영구 저장 & 중복 차단:</strong> 비츠온MRO에서 수집한 신규 상품이 브라우저 로컬 DB(localStorage) 및 클라우드에 영구 보관됩니다. 동일 상품코드를 재검색할 경우 크롤링 과정 없이 즉시 정식 DB 상품으로 인식됩니다.</li>
+            <li><strong>🏷️ 추천 카드 [DB] 뱃지 표기:</strong> 상단 추천 카드 영역에 DB 정식 등록 여부를 직관적으로 구분할 수 있는 [DB] (MRO 수집 상품은 [DB(MRO)]) 뱃지를 표시하여 데이터 출처를 명확히 구분합니다.</li>
+            <li><strong>🗑️ 콘티 표 [표 비우기] 버튼 & 기본 15칸 자동 세팅:</strong> 버튼 한 번으로 콘티 표를 비울 수 있으며, 영상 기획의 표준 규격인 기본 15칸(도입-본문-엔딩)으로 말끔하게 초기화됩니다.</li>
+            <li><strong>🔢 행 번호 1번 자동 무조건 정렬:</strong> 행 추가, 삭제, 순서 이동, 엑셀 붙여넣기 등 어떤 작업을 하더라도 행 번호가 무조건 1번부터 차례대로 완벽하게 자동 정렬됩니다.</li>
+            <li><strong>👁️ 대본 보관함 [원클릭 대본 미리보기 모달]:</strong> 보관함에서 대본 카드 클릭 시 작업 중이던 스튜디오를 덮어쓰지 않고, 팝업 창에서 2단 콘티 표와 대본 줄글을 먼저 상세히 확인한 뒤 [스튜디오로 불러오기]를 선택할 수 있습니다.</li>
+          </ul>
+        </div>
+
         <!-- Ver 2.6 -->
         <div class="changelog-item">
           <div class="changelog-item-header">
             <span class="changelog-ver">v2.6</span>
-            <span class="changelog-date">2026.09.28 (최신)</span>
-            <span class="changelog-badge-new">NEW</span>
+            <span class="changelog-date">2026.09.28</span>
           </div>
           <ul class="changelog-list">
             <li><strong>🌐 MRO 실시간 단건 크롤링 도입:</strong> DB에 없는 상품코드 검색 시 비츠온MRO에서 상품명, 스펙, 고해상도 이미지를 실시간 스크래핑하여 즉시 AI 기획에 활용할 수 있습니다. (전산팀 트래픽 부담 없는 순수 단건 온디맨드 방식)</li>
