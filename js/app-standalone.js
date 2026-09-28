@@ -992,8 +992,12 @@ const App = {
     });
 
     // Insert Specs
-    document.getElementById('btnInsertSpecs').addEventListener('click', () => this.insertSpecs());
-    document.getElementById('btnToolbarInsertSpecs').addEventListener('click', () => this.insertSpecs());
+    document.getElementById('btnInsertSpecs').addEventListener('click', () => {
+      this.promptScriptInsertion('specs', mode => this.insertSpecs(mode));
+    });
+    document.getElementById('btnToolbarInsertSpecs').addEventListener('click', () => {
+      this.promptScriptInsertion('specs', mode => this.insertSpecs(mode));
+    });
 
     // AI Analysis
     document.getElementById('btnRunAiAnalysis').addEventListener('click', () => this.runAiAnalysis());
@@ -1032,8 +1036,12 @@ const App = {
       }
     });
 
-    document.getElementById('btnAiShorts').addEventListener('click', () => this.runAiShorts());
-    document.getElementById('btnAiLongform').addEventListener('click', () => this.runAiLongform());
+    document.getElementById('btnAiShorts').addEventListener('click', () => {
+      this.promptScriptInsertion('shorts', mode => this.runAiShorts(mode));
+    });
+    document.getElementById('btnAiLongform').addEventListener('click', () => {
+      this.promptScriptInsertion('longform', mode => this.runAiLongform(mode));
+    });
     document.getElementById('btnAiSubtitles').addEventListener('click', () => this.runAiSubtitles());
     document.getElementById('btnAiVideoPrompts').addEventListener('click', () => this.runAiPrompts());
 
@@ -1165,8 +1173,26 @@ const App = {
 
       document.getElementById('customProductModal')?.classList.remove('active');
       this.selectProduct(customP);
-      this.renderRecommendationCards([customP, ...ProductService.products.slice(0, 4)]);
       this.showToast(`[${name}] 제품이 성공적으로 등록되어 기획 스튜디오에 선택되었습니다! 🚀`, 'success');
+    });
+
+    // 📖 User Guide Modal Handlers
+    document.getElementById('btnOpenUserGuide')?.addEventListener('click', () => {
+      document.getElementById('userGuideModal')?.classList.add('active');
+    });
+    document.getElementById('btnCloseUserGuideModal')?.addEventListener('click', () => {
+      document.getElementById('userGuideModal')?.classList.remove('active');
+    });
+    document.getElementById('btnCloseUserGuideFooter')?.addEventListener('click', () => {
+      document.getElementById('userGuideModal')?.classList.remove('active');
+    });
+
+    // ⚠️ Script Overwrite Modal Close Handlers
+    document.getElementById('btnCloseOverwriteModal')?.addEventListener('click', () => {
+      document.getElementById('confirmScriptOverwriteModal')?.classList.remove('active');
+    });
+    document.getElementById('btnOverwriteCancel')?.addEventListener('click', () => {
+      document.getElementById('confirmScriptOverwriteModal')?.classList.remove('active');
     });
 
     // 🎬 2-Column Storyboard Table Handlers
@@ -1474,7 +1500,64 @@ const App = {
     }
   },
 
-  async runAiShorts() {
+  promptScriptInsertion(type, onConfirm) {
+    const curContent = (ScriptService.currentScript?.content || '').trim();
+    if (!curContent) {
+      onConfirm('replace');
+      return;
+    }
+
+    const modal = document.getElementById('confirmScriptOverwriteModal');
+    const titleEl = document.getElementById('overwriteModalTitle');
+    const warnTitleEl = document.getElementById('overwriteWarningTitle');
+    const warnMsgEl = document.getElementById('overwriteWarningMsg');
+    const btnReplace = document.getElementById('btnOverwriteReplace');
+    const btnAppend = document.getElementById('btnOverwriteAppend');
+    const btnCancel = document.getElementById('btnOverwriteCancel');
+    const btnClose = document.getElementById('btnCloseOverwriteModal');
+
+    const typeNames = {
+      shorts: '⚡ AI 쇼츠 대본 (1분)',
+      longform: '🎥 AI 롱폼 대본',
+      specs: '📋 제품 제원 요약 스펙'
+    };
+    const actionName = typeNames[type] || '새 대본';
+
+    if (titleEl) titleEl.textContent = `⚠️ [대본 줄글] ${actionName} 적용 안내`;
+    if (warnTitleEl) warnTitleEl.textContent = `⚠️ 현재 대본 줄글에 작성 중인 내용 (${curContent.length}자)이 있습니다!`;
+    if (warnMsgEl) {
+      warnMsgEl.innerHTML = `선택하신 <strong>[${actionName}]</strong> 내용이 <strong>[✍️ 대본 줄글]</strong> 탭에 기록됩니다.<br>기존 작업 내용을 어떻게 처리할까요?`;
+    }
+
+    const newBtnReplace = btnReplace.cloneNode(true);
+    const newBtnAppend = btnAppend.cloneNode(true);
+    const newBtnCancel = btnCancel.cloneNode(true);
+    const newBtnClose = btnClose.cloneNode(true);
+
+    btnReplace.parentNode.replaceChild(newBtnReplace, btnReplace);
+    btnAppend.parentNode.replaceChild(newBtnAppend, btnAppend);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+    btnClose.parentNode.replaceChild(newBtnClose, btnClose);
+
+    const closeModal = () => modal?.classList.remove('active');
+
+    newBtnReplace.addEventListener('click', () => {
+      closeModal();
+      onConfirm('replace');
+    });
+
+    newBtnAppend.addEventListener('click', () => {
+      closeModal();
+      onConfirm('append');
+    });
+
+    newBtnCancel.addEventListener('click', closeModal);
+    newBtnClose.addEventListener('click', closeModal);
+
+    modal?.classList.add('active');
+  },
+
+  async runAiShorts(mode = 'replace') {
     const p = ProductService.currentSelected;
     if (!p) { this.showToast('제품을 선택해주세요.', 'error'); return; }
     const btn = document.getElementById('btnAiShorts');
@@ -1482,10 +1565,14 @@ const App = {
     btn.innerHTML = `<span class="spinner"></span> 대본 작성 중...`;
     try {
       const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes);
-      ScriptService.currentScript.content = text;
-      ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(text);
+      if (mode === 'append' && ScriptService.currentScript.content) {
+        ScriptService.currentScript.content = `${ScriptService.currentScript.content}\n\n[추가 생성 대본]\n${text}`.trim();
+      } else {
+        ScriptService.currentScript.content = text;
+      }
       this.updateEditorUI();
-      this.showToast('1분 쇼츠 대본 초안 및 2단 콘티가 생성되었습니다! 🎬', 'success');
+      this.switchEditorTab('script');
+      this.showToast('대본이 [✍️ 대본 줄글] 탭에 작성되었습니다! 검토 후 [🔄 줄글 ➔ 표 변환]을 눌러보세요. 🎬', 'success');
       ScriptService.saveCurrent();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
@@ -1495,7 +1582,7 @@ const App = {
     }
   },
 
-  async runAiLongform() {
+  async runAiLongform(mode = 'replace') {
     const p = ProductService.currentSelected;
     if (!p) { this.showToast('제품을 선택해주세요.', 'error'); return; }
     const btn = document.getElementById('btnAiLongform');
@@ -1503,10 +1590,14 @@ const App = {
     btn.innerHTML = `<span class="spinner"></span> 롱폼 작성 중...`;
     try {
       const text = await GeminiService.generateLongFormScript(p, ScriptService.currentScript.notes);
-      ScriptService.currentScript.content = text;
-      ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(text);
+      if (mode === 'append' && ScriptService.currentScript.content) {
+        ScriptService.currentScript.content = `${ScriptService.currentScript.content}\n\n[추가 롱폼 대본]\n${text}`.trim();
+      } else {
+        ScriptService.currentScript.content = text;
+      }
       this.updateEditorUI();
-      this.showToast('유튜브 롱폼 리뷰 대본 및 2단 콘티가 생성되었습니다! 🎥', 'success');
+      this.switchEditorTab('script');
+      this.showToast('롱폼 대본이 [✍️ 대본 줄글] 탭에 작성되었습니다! 검토 후 [🔄 줄글 ➔ 표 변환]을 눌러보세요. 🎥', 'success');
       ScriptService.saveCurrent();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
@@ -1557,15 +1648,20 @@ const App = {
     }
   },
 
-  insertSpecs() {
+  insertSpecs(mode = 'append') {
     const p = ProductService.currentSelected;
     if (!p) { this.showToast('선택된 제품이 없습니다.', 'error'); return; }
     const text = ProductService.getSpecsSummaryText(p);
-    const cur = document.getElementById('scriptContent').value;
-    const newVal = cur ? `${cur}\n\n[제품 제원 요약]\n${text}` : `[제품 제원 요약]\n${text}`;
-    ScriptService.currentScript.content = newVal;
+    const cur = ScriptService.currentScript.content || '';
+    if (mode === 'replace') {
+      ScriptService.currentScript.content = `[제품 제원 요약]\n${text}`;
+    } else {
+      ScriptService.currentScript.content = cur ? `${cur}\n\n[제품 제원 요약]\n${text}` : `[제품 제원 요약]\n${text}`;
+    }
     this.updateEditorUI();
-    this.showToast('스펙 요약이 대본에 추가되었습니다.');
+    this.switchEditorTab('script');
+    this.showToast('제품 스펙이 [✍️ 대본 줄글] 탭에 추가되었습니다! 📋', 'success');
+    this.debounceAutoSave();
   },
 
   applyTemplate(id) {
