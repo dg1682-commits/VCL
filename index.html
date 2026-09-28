@@ -151,6 +151,7 @@
           <!-- TOP STATUS & TITLE BAR -->
           <div class="studio-top-bar">
             <div class="script-title-row">
+              <span id="currentScriptLockBadge" class="lock-indicator-badge" style="display: none;">🔒 잠김</span>
               <input type="text" id="scriptTitleInput" class="script-title-input" placeholder="대본 제목을 입력하세요..." />
               <select id="scriptStatusSelect" class="script-status-select">
                 <option value="planning">📝 기획중</option>
@@ -159,16 +160,6 @@
                 <option value="uploaded">🚀 업로드완료</option>
               </select>
               <button id="btnSaveScript" class="btn-save-script">💾 저장</button>
-            </div>
-
-            <!-- PRODUCT LINK ROW (직접 수정/동기화/숨김 가능) -->
-            <div class="script-product-row">
-              <div class="product-link-badge">
-                <span class="product-link-icon">📦 대상 제품:</span>
-                <input type="text" id="scriptProductInput" class="script-product-input" placeholder="대본 연결 제품명 (인쇄 시 표기 / 비워두면 인쇄 숨김)" title="대본에 연결된 제품명입니다. 직접 타이핑하여 수정할 수 있으며, 비워두면 인쇄 시 제품명이 나오지 않습니다." />
-                <button id="btnSyncCurrentProduct" class="btn-sync-current-prod" title="왼쪽에서 현재 선택된 제품으로 즉시 변경">🔄 현재 선택 제품으로 변경</button>
-                <button id="btnClearProductLink" class="btn-clear-prod-link" title="제품명 연결 해제 (인쇄 시 제품명 숨김)">✕ 제품명 숨김</button>
-              </div>
             </div>
 
             <!-- DURATION & CHAR ESTIMATOR GAUGE -->
@@ -192,16 +183,22 @@
 
           <!-- ACTION TOOLBAR -->
           <div class="studio-toolbar">
-            <button id="btnToolbarInsertSpecs" class="btn-tool">📋 스펙 삽입</button>
-            <select id="templateSelectDropdown" class="template-dropdown">
-              <option value="">📑 템플릿 선택하여 적용...</option>
-            </select>
-            <button id="btnAiShorts" class="btn-tool ai-tool">⚡ AI 쇼츠 대본 (1분)</button>
-            <button id="btnAiLongform" class="btn-tool ai-tool">🎥 AI 롱폼 대본</button>
-            <button id="btnAiSubtitles" class="btn-tool ai-tool">💬 자막 분할</button>
-            <button id="btnAiVideoPrompts" class="btn-tool ai-tool">🤖 AI 영상 프롬프트</button>
+            <button id="btnToggleAiTools" class="btn-tool btn-toggle-ai-tools" title="스펙 삽입, AI 쇼츠/롱폼, 자막, 프롬프트 도구 펼치기/접기">
+              <span id="btnToggleAiToolsText">✨ AI & 보조 도구 펼치기 ▾</span>
+            </button>
             
-            <div style="margin-left: auto; display: flex; gap: 6px;">
+            <div id="aiToolsCollapsible" class="ai-tools-collapsible" style="display: none;">
+              <button id="btnToolbarInsertSpecs" class="btn-tool">📋 스펙 삽입</button>
+              <select id="templateSelectDropdown" class="template-dropdown">
+                <option value="">📑 템플릿 선택하여 적용...</option>
+              </select>
+              <button id="btnAiShorts" class="btn-tool ai-tool">⚡ AI 쇼츠 대본 (1분)</button>
+              <button id="btnAiLongform" class="btn-tool ai-tool">🎥 AI 롱폼 대본</button>
+              <button id="btnAiSubtitles" class="btn-tool ai-tool">💬 자막 분할</button>
+              <button id="btnAiVideoPrompts" class="btn-tool ai-tool">🤖 AI 영상 프롬프트</button>
+            </div>
+            
+            <div class="toolbar-right-actions" style="margin-left: auto; display: flex; gap: 6px;">
               <button id="btnPrintStoryboardToolbar" class="btn-tool" title="2단 콘티 A4 1장 깔끔 인쇄">🖨️ 콘티 인쇄</button>
               <button id="btnCopyScript" class="btn-tool" title="대본 본문 클립보드 복사">📋 복사</button>
               <button id="btnExportTxt" class="btn-tool" title="텍스트 파일로 저장">📄 TXT</button>
@@ -242,7 +239,6 @@
                 <div class="storyboard-print-header">
                   <h2 id="sbPrintTitle">대본 제목</h2>
                   <div class="sb-print-meta">
-                    <span id="sbPrintProduct" class="sb-print-product" contenteditable="true" title="클릭하여 제품명을 직접 수정할 수 있습니다 (지우면 인쇄 시 숨겨집니다)">제품: -</span>
                     <span id="sbPrintDuration">예상 소요 시간: 0초</span>
                     <span id="sbPrintChar">글자 수: 0자</span>
                     <span id="sbPrintDate">일신비츠온 콘텐츠랩</span>
@@ -649,6 +645,71 @@
     </div>
   </div>
 
+  <!-- MODAL: CLEAR STORYBOARD CONFIRM -->
+  <div id="clearTableConfirmModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">⚠️</span>
+          <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">콘티 표 비우기 확인</h3>
+        </div>
+        <button id="btnCloseClearTableModal" class="btn-modal-close" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; color: #e2e8f0; font-size: 0.9rem; line-height: 1.6;">
+        <p style="margin-top: 0;">
+          콘티 표의 모든 내용을 지우고 <strong>기본 15칸 빈 표로 초기화</strong>하시겠습니까?
+        </p>
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #fca5a5;">
+          💡 <strong>안전 안내:</strong><br>
+          • 표를 비워도 <strong>자동 저장은 실행되지 않습니다</strong> (원본 대본 보존).<br>
+          • 비운 직후 화면 하단 토스트의 <strong>[↩️ 되살리기(실행 취소)]</strong> 버튼으로 즉시 원복할 수 있습니다.
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px;">
+        <button id="btnCancelClearTable" class="btn-overwrite-cancel">취소</button>
+        <button id="btnConfirmClearTable" class="btn-overwrite-danger">🗑️ 표 비우기 실행</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SCRIPT SAVE CONFIRMATION (무조건 팝업) -->
+  <div id="saveScriptConfirmModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="saveModalIcon" style="font-size: 1.3rem;">💾</span>
+          <h3 id="saveModalTitle" style="margin: 0; font-size: 1.15rem; color: #fff;">대본 저장 확인</h3>
+        </div>
+        <button id="btnCloseSaveModal" class="btn-modal-close" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 0.8rem; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">대본 제목</label>
+          <input type="text" id="saveModalTitleInput" class="script-title-input" style="width: 100%; box-sizing: border-box; font-size: 0.92rem; padding: 8px 12px; border-radius: 6px;" />
+        </div>
+        <div class="save-meta-info-box" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; font-size: 0.82rem; color: #cbd5e1; display: flex; justify-content: space-between;">
+          <span>글자 수: <strong id="saveModalCharCount" style="color: #60a5fa;">0자</strong></span>
+          <span>콘티 씬: <strong id="saveModalRowCount" style="color: #34d399;">0행</strong></span>
+          <span>상태: <strong id="saveModalStatusBadge" style="color: #e2e8f0;">기획중</strong></span>
+        </div>
+        
+        <div id="saveModalLockWarning" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 12px; font-size: 0.84rem; color: #fde68a;">
+          🔒 <strong>자물쇠로 잠긴 대본입니다!</strong><br>
+          실수로 변경되지 않도록 보호되어 있습니다. 기존 대본을 유지하려면 <strong>[새 대본으로 저장]</strong>을 선택하세요.
+        </div>
+
+        <p style="margin: 0; font-size: 0.86rem; color: #94a3b8;">
+          현재 편집 중인 대본을 어떻게 저장하시겠습니까?
+        </p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px;">
+        <button id="btnCancelSave" class="btn-overwrite-cancel">취소</button>
+        <button id="btnSaveAsNew" class="btn-overwrite-append" style="background: #10b981;">➕ 새 대본으로 저장</button>
+        <button id="btnSaveOverwrite" class="btn-save-script" style="background: #2563eb;">💾 기존 대본에 덮어쓰기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: USAGE DASHBOARD (전사 통합 AI 토큰 & MRO 크롤링 현황) -->
   <div id="usageModal" class="modal-overlay">
     <div class="modal-box usage-modal-box">
@@ -778,18 +839,33 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">📢</span>
           <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">VCL-Light 최신 업데이트 내역</h3>
-          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.8 Live</span>
+          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.9 Live</span>
         </div>
         <button id="btnCloseChangelogModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
       </div>
       <div class="modal-body changelog-modal-body">
 
+        <!-- Ver 2.9 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.9</span>
+            <span class="changelog-date">2026.09.28 (최신)</span>
+            <span class="changelog-badge-new">NEW</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>🧹 제품명 입력란 제거 & 인쇄 헤더 깔끔화:</strong> 스튜디오 상단 바의 불필요한 제품명 입력란을 완전히 삭제하고, 인쇄물에도 혼란을 주던 제품명 칸을 제거하여 제목과 본문에만 집중되도록 정리했습니다.</li>
+            <li><strong>🛡️ 표 비우기 자동저장 원천 차단 & [↩️ 되살리기] 탑재:</strong> [표 비우기] 클릭 시 기존 대본이 자동 저장되어 유실되던 문제를 완벽 수정했습니다. 비우기 전 확인 모달과 함께, 비운 직후 즉시 1클릭으로 원상 복구할 수 있는 [되살리기(실행 취소)] 기능을 신설했습니다.</li>
+            <li><strong>📂 AI & 보조 도구 펼치기/접기 아코디언:</strong> 스펙 삽입, 템플릿, AI 쇼츠/롱폼, 자막, 프롬프트 도구를 [✨ AI & 보조 도구 펼치기 ▾] 버튼 하나로 깔끔하게 접어두어 쾌적한 작업 공간을 확보했습니다.</li>
+            <li><strong>🔒 대본 보관함 자물쇠 잠금/해제 장치:</strong> 소중한 대본을 실수로 변경하거나 삭제하지 못하도록 [🔒 잠금] 장치를 도입했습니다. 잠긴 대본은 자동 저장이 차단되며 저장 시 분기 모달로 안전하게 보호됩니다.</li>
+            <li><strong>💾 저장 시 무조건 확인 팝업 모달 제공:</strong> 저장 버튼 클릭 시 [기존 대본에 덮어쓰기 / 새 대본으로 저장 / 취소]를 물어보는 전용 확인 팝업을 거치도록 하여 작업자 실수에 의한 대본 덮어쓰기를 100% 방지했습니다.</li>
+          </ul>
+        </div>
+
         <!-- Ver 2.8 -->
         <div class="changelog-item">
           <div class="changelog-item-header">
             <span class="changelog-ver">v2.8</span>
-            <span class="changelog-date">2026.09.28 (최신)</span>
-            <span class="changelog-badge-new">NEW</span>
+            <span class="changelog-date">2026.09.28</span>
           </div>
           <ul class="changelog-list">
             <li><strong>💰 AI 토큰 & MRO 크롤링 전사 통합 대시보드 신설:</strong> 상단 헤더에 [💰 사용량 보기] 버튼이 추가되었습니다. 클릭 시 일일 AI 토큰 잔여량(%), 입력/출력 토큰 세부량, 일일 AI 호출 횟수를 실시간 확인할 수 있습니다.</li>
