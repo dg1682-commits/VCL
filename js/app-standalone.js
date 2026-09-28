@@ -407,18 +407,21 @@ const ProductService = {
 
 // 4. Default Storyboard Sample & Templates
 const DEFAULT_STORYBOARD_SAMPLE = [
-  { section: '본문', num: 2, script: '오늘은 큐브 멀티탭을 가지고 왔어요', scene: '인서트(상하좌우팬)' },
-  { section: '본문', num: 3, script: '디자인이 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요', scene: '클로즈업 컷 > 책상위에 올려둔 모습' },
-  { section: '본문', num: 4, script: '큐브형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 꽂을 수 있어요', scene: '기존 안껴지는거 모습 > 다양한 모양 멀티탭 꽂는 모습' },
-  { section: '본문', num: 5, script: '그리고 포트도 다양해요, USB 1개, C타입 2개 포트가 있는데, C타입은 PD형 20W 고속충전까지 지원해서,\n휴대폰 충전하는데 스트레스가 없어요', scene: '포트 클로즈업 > USB 꽂기 > C타입 꽂기 > 고속충전 뜨는거 보여주기 > 마음 편한 모습(짤)' },
-  { section: '본문', num: 6, script: '이렇게 예쁜데 능력좋은 멀티탭이 두종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요', scene: '양손에 두개 들고 있기 > 플러그 모습 > 코드 모습' },
-  { section: '본문', num: 7, script: '플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 손 닿는 곳에서 편하게 쓰고 싶을 때 딱이에요', scene: '벽에 꽂는 모습 > 책상위에 두고 쓰는 모습' },
-  { section: '본문', num: 8, script: '안전도 문제없어요, 과부하 차단 기능이 있어서 안심하고 쓸 수 있고', scene: '차단 기능 클로즈업 > 안심하는 표정' },
-  { section: '본문', num: 9, script: '불에 잘 안 타는 난연 1등급 V-0 소재로 만들어져서 화재 걱정도 덜어줍니다', scene: '불에 안타는 짤 > 소재 인증 마크 or 텍스트 강조' },
-  { section: '본문', num: 10, script: '게다가 KC 인증까지 완료된 제품이라 믿고 쓸 수 있어요', scene: 'KC인증 마크 강조' },
-  { section: '본문', num: 11, script: '지금 비츠온MRO에서 특가로 만나보세요', scene: '제품 들고 손인사 > 비츠온MRO 로고 및 자막' },
-  { section: '엔딩', num: 18, script: '작고 예쁜데 충전까지 빠른 루미앤 큐브 멀티탭', scene: '제품 연출 컷' },
-  { section: '엔딩', num: 19, script: '지금 바로 사용해보세요!', scene: '구매링크 유도 컷' }
+  { section: '도입', num: 1, script: '어지럽고 지저분한 책상 위 멀티탭 때문에 스트레스 받으셨죠?', scene: '지저분한 전선들과 기존 투박한 멀티탭 클로즈업' },
+  { section: '도입', num: 2, script: '오늘은 디자인과 실용성을 완벽히 잡은 루미앤 큐브 멀티탭을 가지고 왔어요', scene: '인서트(상하좌우팬) > 깔끔한 데스크테리어 제품 컷' },
+  { section: '본문', num: 3, script: '디자인이 정말 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요', scene: '클로즈업 컷 > 책상 위에 올려둔 감성적인 모습' },
+  { section: '본문', num: 4, script: '큐브 형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 편하게 꽂을 수 있어요', scene: '기존 안 꽂히는 모습 > 다양한 모양 플러그 꽂는 시연' },
+  { section: '본문', num: 5, script: '그리고 포트도 다양해요, USB 1개와 C타입 2개 포트가 탑재되어 있습니다', scene: '포트 클로즈업 > USB 꽂기 > C타입 케이블 꽂기' },
+  { section: '본문', num: 6, script: 'C타입은 PD형 20W 초고속 충전까지 지원해서, 스마트폰 충전할 때 답답함이 전혀 없어요', scene: '고속충전 표시 뜨는 스마트폰 화면 > 안도하는 표정(짤)' },
+  { section: '본문', num: 7, script: '이렇게 예쁜데 능력 좋은 멀티탭이 두 종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요', scene: '양손에 두 종류 들고 비교 > 플러그 모습 > 코드 모습' },
+  { section: '본문', num: 8, script: '플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 쓰기 딱이에요', scene: '벽에 꽂는 연출 > 침대 협탁에 두고 쓰는 연출' },
+  { section: '본문', num: 9, script: '안전도 전혀 문제없어요, 과부하 차단 스위치가 내장되어 있어 이상 전류 발생 시 자동으로 셧다운됩니다', scene: '과부하 차단 스위치 클로즈업 > 안심하는 표정' },
+  { section: '본문', num: 10, script: '불에 잘 안 타는 난연 1등급 V-0 최고급 소재로 만들어져서 화재 걱정도 덜어줍니다', scene: '난연 소재 인증 마크 or 불에 안 타는 그래픽 강조' },
+  { section: '본문', num: 11, script: '각 콘센트 구멍마다 슬라이드 안전 커버가 적용되어 이물질 삽입과 감전 사고를 철저히 예방해요', scene: '슬라이드 안전 커버 디테일 클로즈업' },
+  { section: '본문', num: 12, script: '게다가 국가 공인 KC 안전 인증까지 완료된 믿을 수 있는 일신비츠온 정품입니다', scene: 'KC 정식 인증 마크 강조' },
+  { section: '본문', num: 13, script: '지금 비츠온MRO에서 특가와 빠른 총알 배송으로 만나보실 수 있습니다', scene: '제품 들고 손인사 > 비츠온MRO 로고 및 자막' },
+  { section: '엔딩', num: 14, script: '작고 예쁜데 충전까지 빠른 루미앤 큐브 멀티탭', scene: '감성적인 최종 제품 연출 컷' },
+  { section: '엔딩', num: 15, script: '지금 바로 구매하고 나만의 데스크테리어를 완성해보세요!', scene: '구매링크 유도 컷 및 프로필 링크 안내' }
 ];
 
 const DEFAULT_TEMPLATES = [
@@ -426,55 +429,66 @@ const DEFAULT_TEMPLATES = [
     id: 'tpl_lumian_cube_multitab',
     title: '[실무 2단 콘티] 루미앤 큐브 멀티탭 (1분 22초 실전 샘플)',
     category: '비츠온/2단콘티',
-    description: '실무 엑셀 콘티 포맷 (구성/번호/대본/장면) 실전 샘플 - 영상 실측 1분 22초 기준',
+    description: '실무 엑셀 콘티 포맷 (구성/번호/대본/장면) 실전 샘플 - 영상 실측 1분 22초 기준 (표준 15행)',
     content: `[00:00~00:05] 오프닝 도입
-(화면: 인서트(상하좌우팬))
-오늘은 큐브 멀티탭을 가지고 왔어요
+(화면: 지저분한 전선들과 기존 투박한 멀티탭 클로즈업)
+어지럽고 지저분한 책상 위 멀티탭 때문에 스트레스 받으셨죠?
 
-[00:05~00:16] 디자인 & 첫인상
-(화면: 클로즈업 컷 > 책상위에 올려둔 모습)
-디자인이 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요
+[00:05~00:10] 제품 등장
+(화면: 인서트(상하좌우팬) > 깔끔한 데스크테리어 제품 컷)
+오늘은 디자인과 실용성을 완벽히 잡은 루미앤 큐브 멀티탭을 가지고 왔어요
 
-[00:16~00:26] 큐브 형태 특장점
-(화면: 기존 안껴지는거 모습 > 다양한 모양 멀티탭 꽂는 모습)
-큐브형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 꽂을 수 있어요
+[00:10~00:18] 디자인 & 첫인상
+(화면: 클로즈업 컷 > 책상 위에 올려둔 감성적인 모습)
+디자인이 정말 예뻐요, 투박하고 칙칙하던 제 책상에 예쁜 오브제를 놓은 느낌이에요
 
-[00:26~00:44] 고속 충전 포트
-(화면: 포트 클로즈업 > USB 꽂기 > C타입 꽂기 > 고속충전 뜨는거 보여주기 > 마음 편한 모습(짤))
-그리고 포트도 다양해요, USB 1개, C타입 2개 포트가 있는데, C타입은 PD형 20W 고속충전까지 지원해서,
-휴대폰 충전하는데 스트레스가 없어요
+[00:18~00:26] 큐브 형태 특장점
+(화면: 기존 안 꽂히는 모습 > 다양한 모양 플러그 꽂는 시연)
+큐브 형태라 플러그 모양이 날씬하든 뚱뚱하든 별모양이든 상관없이 3개까지 편하게 꽂을 수 있어요
 
-[00:44~00:54] 2종 라인업 소개
-(화면: 양손에 두개 들고 있기 > 플러그 모습 > 코드 모습)
-이렇게 예쁜데 능력좋은 멀티탭이 두종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요
+[00:26~00:34] 다양한 포트 탑재
+(화면: 포트 클로즈업 > USB 꽂기 > C타입 케이블 꽂기)
+그리고 포트도 다양해요, USB 1개와 C타입 2개 포트가 탑재되어 있습니다
 
-[00:54~01:08] 사용 상황별 추천
-(화면: 벽에 꽂는 모습 > 책상위에 두고 쓰는 모습)
-플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 손 닿는 곳에서 편하게 쓰고 싶을 때 딱이에요
+[00:34~00:44] PD 20W 초고속 충전
+(화면: 고속충전 표시 뜨는 스마트폰 화면 > 안도하는 표정(짤))
+C타입은 PD형 20W 초고속 충전까지 지원해서, 스마트폰 충전할 때 답답함이 전혀 없어요
 
-[01:08~01:14] 안전 장치 (과부하 차단)
-(화면: 차단 기능 클로즈업 > 안심하는 표정)
-안전도 문제없어요, 과부하 차단 기능이 있어서 안심하고 쓸 수 있고
+[00:44~00:52] 2종 라인업 소개
+(화면: 양손에 두 종류 들고 비교 > 플러그 모습 > 코드 모습)
+이렇게 예쁜데 능력 좋은 멀티탭이 두 종류에요, 하나는 플러그 타입, 하나는 코드 타입이에요
 
-[01:14~01:21] 난연 소재 안심
-(화면: 불에 안타는 짤 > 소재 인증 마크 or 텍스트 강조)
-불에 잘 안 타는 난연 1등급 V-0 소재로 만들어져서 화재 걱정도 덜어줍니다
+[00:52~01:00] 사용 상황별 추천
+(화면: 벽에 꽂는 연출 > 침대 협탁에 두고 쓰는 연출)
+플러그 타입은 벽에 딱 붙여서 깔끔하게 쓰고 싶을 때 좋고, 코드 타입은 책상이나 침대 옆에 두고 쓰기 딱이에요
 
-[01:21~01:26] 국가 공인 KC 인증
-(화면: KC인증 마크 강조)
-게다가 KC 인증까지 완료된 제품이라 믿고 쓸 수 있어요
+[01:00~01:06] 안전 장치 (과부하 차단)
+(화면: 과부하 차단 스위치 클로즈업 > 안심하는 표정)
+안전도 전혀 문제없어요, 과부하 차단 스위치가 내장되어 있어 이상 전류 발생 시 자동으로 셧다운됩니다
 
-[01:26~01:30] MRO 프로모션 안내
+[01:06~01:12] 난연 소재 안심
+(화면: 난연 소재 인증 마크 or 불에 안 타는 그래픽 강조)
+불에 잘 안 타는 난연 1등급 V-0 최고급 소재로 만들어져서 화재 걱정도 덜어줍니다
+
+[01:12~01:17] 슬라이드 안전 커버
+(화면: 슬라이드 안전 커버 디테일 클로즈업)
+각 콘센트 구멍마다 슬라이드 안전 커버가 적용되어 이물질 삽입과 감전 사고를 철저히 예방해요
+
+[01:17~01:21] 국가 공인 KC 인증
+(화면: KC 정식 인증 마크 강조)
+게다가 국가 공인 KC 안전 인증까지 완료된 믿을 수 있는 일신비츠온 정품입니다
+
+[01:21~01:26] MRO 프로모션 안내
 (화면: 제품 들고 손인사 > 비츠온MRO 로고 및 자막)
-지금 비츠온MRO에서 특가로 만나보세요
+지금 비츠온MRO에서 특가와 빠른 총알 배송으로 만나보실 수 있습니다
 
-[01:30~01:35] 엔딩 요약
-(화면: 제품 연출 컷)
+[01:26~01:31] 엔딩 요약
+(화면: 감성적인 최종 제품 연출 컷)
 작고 예쁜데 충전까지 빠른 루미앤 큐브 멀티탭
 
-[01:35~01:40] 최종 CTA
-(화면: 구매링크 유도 컷)
-지금 바로 사용해보세요!`,
+[01:31~01:35] 최종 CTA
+(화면: 구매링크 유도 컷 및 프로필 링크 안내)
+지금 바로 구매하고 나만의 데스크테리어를 완성해보세요!`,
     storyboard: JSON.parse(JSON.stringify(DEFAULT_STORYBOARD_SAMPLE))
   },
   {
@@ -637,13 +651,54 @@ const ScriptService = {
   currentScript: null,
   scripts: [],
 
+  createBlankStoryboard(count = 15) {
+    const rows = [];
+    for (let i = 1; i <= count; i++) {
+      let section = '본문';
+      if (i <= 2) section = '도입';
+      else if (i >= count - 1) section = '엔딩';
+      rows.push({
+        section: section,
+        num: i,
+        script: '',
+        scene: ''
+      });
+    }
+    return rows;
+  },
+
   initNew(p = null) {
     const isDefault = !p;
+    let storyboardRows = [];
+    if (isDefault) {
+      storyboardRows = JSON.parse(JSON.stringify(DEFAULT_STORYBOARD_SAMPLE));
+    } else {
+      storyboardRows = [
+        { section: '도입', num: 1, script: `${p.productNm} 오프닝 및 주목 유도`, scene: '제품 클로즈업 & 인서트' },
+        { section: '도입', num: 2, script: `기존 제품의 일상 속 불편함 및 공감대 형성`, scene: '문제 상황 및 일상 컷' },
+        { section: '본문', num: 3, script: `[핵심 규격] ${p.standard || '정격 규격 안내'}`, scene: '제품 전체 외형 및 규격 표기' },
+        { section: '본문', num: 4, script: `[특장점 1] ${p.modelName || p.brandNm} 정품 기술력과 성능`, scene: '작동 시연 및 상세 기능 클로즈업' },
+        { section: '본문', num: 5, script: '', scene: '' },
+        { section: '본문', num: 6, script: '', scene: '' },
+        { section: '본문', num: 7, script: '', scene: '' },
+        { section: '본문', num: 8, script: '', scene: '' },
+        { section: '본문', num: 9, script: '', scene: '' },
+        { section: '본문', num: 10, script: '', scene: '' },
+        { section: '본문', num: 11, script: '', scene: '' },
+        { section: '본문', num: 12, script: '', scene: '' },
+        { section: '본문', num: 13, script: '', scene: '' },
+        { section: '엔딩', num: 14, script: `${p.productNm} 핵심 장점 요약`, scene: '제품 연출 컷' },
+        { section: '엔딩', num: 15, script: '지금 비츠온MRO에서 특가로 만나보세요!', scene: '구매링크 및 엔딩 로고' }
+      ];
+    }
+    // Strict 1-based sequential re-indexing
+    storyboardRows.forEach((r, idx) => { r.num = idx + 1; });
+
     this.currentScript = {
       id: 'script_' + Date.now(),
       title: p ? `[${p.brandNm}] ${p.productNm} 2단 콘티` : '[비츠온] 루미앤 큐브 멀티탭 (실전 2단 콘티)',
       content: '',
-      notes: isDefault ? '💡 [2단 콘티(표)] 탭에서 각 셀을 직접 클릭하여 자유롭게 수정할 수 있습니다.\n💡 [🖨️ A4 1장 깔끔 인쇄]를 누르면 여백과 글자 크기가 1장에 딱 맞춰집니다.\n💡 기존 엑셀 대본이 있다면 [📋 엑셀 붙여넣기]를 눌러 복사한 표를 즉시 불러오세요.' : '',
+      notes: isDefault ? '💡 [2단 콘티(표)] 탭에서 각 셀을 직접 클릭하여 자유롭게 수정할 수 있습니다.\n💡 [🗑️ 표 비우기]를 누르면 언제든 기본 15칸 빈 표로 깨끗이 초기화됩니다.\n💡 [🖨️ A4 1장 깔끔 인쇄]를 누르면 여백과 글자 크기가 1장에 딱 맞춰집니다.\n💡 기존 엑셀 대본이 있다면 [📋 엑셀 붙여넣기]를 눌러 복사한 표를 즉시 불러오세요.' : '',
       product: p ? {
         productCode: p.productCode,
         productNm: p.productNm,
@@ -662,11 +717,7 @@ const ScriptService = {
       status: 'planning',
       subtitles: '',
       videoPrompts: '',
-      storyboard: isDefault ? JSON.parse(JSON.stringify(DEFAULT_STORYBOARD_SAMPLE)) : [
-        { section: '도입', num: 1, script: `${p.productNm} 오프닝 및 문제제기`, scene: '제품 클로즈업 & 인서트' },
-        { section: '본문', num: 2, script: `핵심 스펙: ${p.standard || '실용적인 규격과 디자인'}`, scene: '실사용 및 작동 시연' },
-        { section: '엔딩', num: 3, script: '지금 비츠온MRO에서 특가로 만나보세요!', scene: '구매링크 및 엔딩 로고' }
-      ],
+      storyboard: storyboardRows,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -864,6 +915,8 @@ const ScriptService = {
         autoNum++;
       }
     }
+    // Strict 1-based sequential re-indexing
+    rows.forEach((r, idx) => { r.num = idx + 1; });
     return rows;
   },
 
@@ -1076,15 +1129,110 @@ const MroCrawlerService = {
     } catch (e) {}
   },
 
+  getSavedProducts() {
+    try {
+      const raw = localStorage.getItem('vcl_crawled_db_products');
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) return list;
+      }
+    } catch (e) {}
+    return [];
+  },
+
+  saveProductToDb(p) {
+    if (!p || !p.productCode) return;
+    p.isCrawled = true;
+    p.isDb = true;
+
+    // 1. Update in-memory window.VCL_PRODUCTS
+    if (window.VCL_PRODUCTS) {
+      const existingIdx = window.VCL_PRODUCTS.findIndex(item => String(item.productCode) === String(p.productCode));
+      if (existingIdx >= 0) {
+        window.VCL_PRODUCTS[existingIdx] = p;
+      } else {
+        window.VCL_PRODUCTS.unshift(p);
+      }
+    }
+
+    // 2. Save to localStorage
+    try {
+      const list = this.getSavedProducts();
+      const idx = list.findIndex(item => String(item.productCode) === String(p.productCode));
+      if (idx >= 0) list[idx] = p;
+      else list.unshift(p);
+      localStorage.setItem('vcl_crawled_db_products', JSON.stringify(list));
+      this.saveCachedProduct(p);
+    } catch (e) {
+      console.warn('localStorage save failed:', e);
+    }
+
+    // 3. Save to Firestore if available
+    try {
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        firestoreDb.collection('crawled_products').doc(String(p.productCode)).set(p).catch(err => {
+          console.warn('Firestore crawl save error:', err);
+        });
+      }
+    } catch (e) {}
+  },
+
+  initDbLoader() {
+    // 1. Load from localStorage
+    const saved = this.getSavedProducts();
+    if (saved && saved.length > 0 && window.VCL_PRODUCTS) {
+      saved.forEach(p => {
+        p.isCrawled = true;
+        p.isDb = true;
+        if (!window.VCL_PRODUCTS.some(item => String(item.productCode) === String(p.productCode))) {
+          window.VCL_PRODUCTS.unshift(p);
+        }
+      });
+      console.log(`[VCL-Light] 로컬 DB에서 크롤링 상품 ${saved.length}종을 영구 로드했습니다.`);
+    }
+
+    // 2. Load from Firestore if online
+    try {
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        firestoreDb.collection('crawled_products').get().then(snap => {
+          if (!snap.empty) {
+            let count = 0;
+            snap.forEach(doc => {
+              const p = doc.data();
+              if (p && p.productCode) {
+                p.isCrawled = true;
+                p.isDb = true;
+                if (!window.VCL_PRODUCTS.some(item => String(item.productCode) === String(p.productCode))) {
+                  window.VCL_PRODUCTS.unshift(p);
+                  count++;
+                }
+              }
+            });
+            if (count > 0) {
+              console.log(`[VCL-Light] Firestore에서 크롤링 상품 ${count}종을 동기화했습니다.`);
+            }
+          }
+        }).catch(err => console.warn('Firestore load crawled error:', err));
+      }
+    } catch (e) {}
+  },
+
   async fetchProductByCode(code) {
     const cleanCode = code.trim();
     if (!cleanCode) throw new Error('상품코드를 입력해주세요.');
 
-    // 1. Check local cache first
-    const cached = this.getCachedProduct(cleanCode);
-    if (cached) return cached;
+    // 1. Check in-memory VCL_PRODUCTS first
+    const inDb = ProductService.getByCode(cleanCode);
+    if (inDb) return inDb;
 
-    // 2. Fetch HTML via CORS proxy
+    // 2. Check local cache
+    const cached = this.getCachedProduct(cleanCode);
+    if (cached) {
+      this.saveProductToDb(cached);
+      return cached;
+    }
+
+    // 3. Fetch HTML via CORS proxy
     const targetUrl = `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${encodeURIComponent(cleanCode)}`;
     const proxies = [
       `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
@@ -1113,13 +1261,13 @@ const MroCrawlerService = {
       throw new Error(`비츠온MRO에서 상품코드 [${cleanCode}]를 찾을 수 없거나 회원 전용 상품입니다.`);
     }
 
-    // 3. Parse HTML
+    // 4. Parse HTML
     const product = this.parseMroHtml(html, cleanCode);
     if (!product || !product.productNm) {
       throw new Error('상품 제원을 추출하지 못했습니다.');
     }
 
-    this.saveCachedProduct(product);
+    this.saveProductToDb(product);
     return product;
   },
 
@@ -1231,7 +1379,9 @@ const App = {
   saveTimer: null,
 
   async init() {
+    MroCrawlerService.initDbLoader();
     ScriptService.initNew();
+    this.reindexStoryboard();
     this.bindEvents();
 
     await TemplateService.loadTemplates();
@@ -1545,6 +1695,10 @@ const App = {
       this.addStoryboardRow();
     });
 
+    document.getElementById('btnClearStoryboardTable')?.addEventListener('click', () => {
+      this.clearStoryboardTable();
+    });
+
     document.getElementById('btnOpenPasteExcelModal')?.addEventListener('click', () => {
       const modal = document.getElementById('excelPasteModal');
       const input = document.getElementById('excelPasteInput');
@@ -1572,6 +1726,7 @@ const App = {
         return;
       }
       ScriptService.currentScript.storyboard = rows;
+      this.reindexStoryboard();
       ScriptService.currentScript.content = ScriptService.storyboardToText(rows);
       this.renderStoryboardTable();
       this.updateStats();
@@ -1601,6 +1756,25 @@ const App = {
     document.getElementById('btnPrintStoryboardToolbar')?.addEventListener('click', () => {
       this.printStoryboard();
     });
+
+    // Script Preview Modal Handlers
+    document.getElementById('btnCloseScriptPreviewModal')?.addEventListener('click', () => {
+      document.getElementById('scriptPreviewModal')?.classList.remove('active');
+    });
+
+    document.getElementById('btnPreviewLoadToStudio')?.addEventListener('click', () => {
+      if (this.previewingScript) {
+        this.loadScriptToStudio(this.previewingScript);
+      }
+    });
+
+    document.getElementById('btnPreviewPrint')?.addEventListener('click', () => {
+      if (this.previewingScript) {
+        this.loadScriptToStudio(this.previewingScript);
+        this.switchEditorTab('storyboard');
+        setTimeout(() => window.print(), 300);
+      }
+    });
   },
 
   switchView(v) {
@@ -1628,11 +1802,19 @@ const App = {
       if (item.brandNm === '비츠온') badgeClass = 'badge-vitson';
       else if (item.brandNm === '홈빛') badgeClass = 'badge-homevit';
 
+      const isCrawled = item.isCrawled || item.category1 === 'MRO 크롤링';
+      const dbBadgeHtml = isCrawled 
+        ? `<span class="rec-db-badge badge-mro-db" title="MRO 수집 후 DB 저장된 상품">DB(MRO)</span>`
+        : `<span class="rec-db-badge" title="VCL 표준 DB 등록 상품">DB</span>`;
+
       card.innerHTML = `
         <div class="rec-card-thumb">
           <img src="${item.pictureNm || 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg'}" alt="${item.productNm}" onerror="this.src='https://vitsonimg.co.kr/images/productsNew/preparing.jpg'" />
         </div>
-        <span class="rec-brand-badge ${badgeClass}">${item.brandNm}</span>
+        <div class="rec-card-badges">
+          <span class="rec-brand-badge ${badgeClass}">${item.brandNm}</span>
+          ${dbBadgeHtml}
+        </div>
         <div class="rec-card-name" title="${item.productNm}">${item.productNm}</div>
         <div class="rec-card-standard">${item.standard || item.modelName || '기본 규격'}</div>
       `;
@@ -1711,20 +1893,27 @@ const App = {
   },
 
   async crawlMroProduct(code) {
+    const existing = ProductService.getByCode(code);
+    if (existing) {
+      this.selectProduct(existing);
+      ProductService.currentRecommendations = [existing, ...ProductService.currentRecommendations.filter(x => x.productCode !== existing.productCode).slice(0, 4)];
+      this.renderRecommendationCards(ProductService.currentRecommendations);
+      this.showToast(`[${existing.productNm}] 이미 DB에 등록된 상품입니다! 즉시 로드했습니다. 👍`, 'success');
+      return;
+    }
+
     ProgressIndicator.start('🌐 비츠온MRO 실시간 크롤링', `상품코드 [${code}] 상세페이지 수집 중...`, '🌐');
     try {
       ProgressIndicator.setProgress(35, 'CORS 프록시 연결 및 MRO 페이지 로딩...');
       const p = await MroCrawlerService.fetchProductByCode(code);
       ProgressIndicator.setProgress(80, '제원 및 고해상도 이미지 파싱 완료...');
       
-      if (window.VCL_PRODUCTS) {
-        window.VCL_PRODUCTS.unshift(p);
-      }
-      ProductService.currentRecommendations = [p, ...ProductService.currentRecommendations.slice(0, 4)];
+      MroCrawlerService.saveProductToDb(p);
+      ProductService.currentRecommendations = [p, ...ProductService.currentRecommendations.filter(x => x.productCode !== p.productCode).slice(0, 4)];
       this.renderRecommendationCards(ProductService.currentRecommendations);
       this.selectProduct(p);
-      ProgressIndicator.complete(`[${p.productNm}] 수집 및 스튜디오 등록 완료!`);
-      this.showToast(`비츠온MRO에서 [${p.productNm}] 스펙을 성공적으로 긁어왔습니다! 🚀`, 'success');
+      ProgressIndicator.complete(`[${p.productNm}] 수집 및 DB 영구 저장 완료!`);
+      this.showToast(`비츠온MRO에서 [${p.productNm}] 스펙을 성공적으로 긁어와 DB에 저장했습니다! 🚀`, 'success');
     } catch (err) {
       ProgressIndicator.error(err.message);
       this.showToast(`MRO 크롤링 실패: ${err.message}`, 'error');
@@ -2250,11 +2439,32 @@ const App = {
   },
 
   // 🎬 Storyboard Table Renderer & Management
+  reindexStoryboard() {
+    const rows = ScriptService.currentScript?.storyboard;
+    if (Array.isArray(rows)) {
+      rows.forEach((r, idx) => {
+        r.num = idx + 1;
+      });
+    }
+  },
+
+  clearStoryboardTable() {
+    if (confirm('콘티 표의 모든 내용을 지우고 기본 15칸 빈 표로 초기화하시겠습니까?\n(작성 중이던 대본과 연출 내용이 모두 비워집니다)')) {
+      ScriptService.currentScript.storyboard = ScriptService.createBlankStoryboard(15);
+      this.reindexStoryboard();
+      this.renderStoryboardTable();
+      this.updateStats();
+      this.debounceAutoSave();
+      this.showToast('콘티 표를 기본 15칸 빈 표로 초기화했습니다. 🗑️', 'info');
+    }
+  },
+
   renderStoryboardTable() {
     const tbody = document.getElementById('storyboardTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
     const rows = ScriptService.currentScript?.storyboard || [];
+    this.reindexStoryboard();
 
     if (rows.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">콘티 행이 없습니다. 상단의 [➕ 행 추가] 또는 [📋 엑셀 붙여넣기]를 눌러보세요.</td></tr>`;
@@ -2284,10 +2494,10 @@ const App = {
       });
       tdSec.appendChild(secSelect);
 
-      // 2. 번호 (Row Number)
+      // 2. 번호 (Row Number - Strictly 1-based index)
       const tdNum = document.createElement('td');
       tdNum.className = 'sb-row-no';
-      tdNum.textContent = r.num !== undefined ? r.num : (idx + 1);
+      tdNum.textContent = idx + 1;
 
       // 3. 대본 (Script Cell - editable)
       const tdScript = document.createElement('td');
@@ -2345,9 +2555,9 @@ const App = {
       ScriptService.currentScript.storyboard = [];
     }
     const rows = ScriptService.currentScript.storyboard;
-    const nextNum = rows.length > 0 ? (Math.max(...rows.map(r => parseInt(r.num, 10) || 0)) + 1) : 1;
-    const newRow = { section, num: nextNum, script, scene };
+    const newRow = { section, num: rows.length + 1, script, scene };
     rows.push(newRow);
+    this.reindexStoryboard();
     this.renderStoryboardTable();
     this.updateStats();
     this.debounceAutoSave();
@@ -2362,6 +2572,7 @@ const App = {
     const rows = ScriptService.currentScript?.storyboard;
     if (!rows || idx < 0 || idx >= rows.length) return;
     rows.splice(idx, 1);
+    this.reindexStoryboard();
     this.renderStoryboardTable();
     this.updateStats();
     this.debounceAutoSave();
@@ -2376,6 +2587,7 @@ const App = {
     const temp = rows[idx];
     rows[idx] = rows[targetIdx];
     rows[targetIdx] = temp;
+    this.reindexStoryboard();
     this.renderStoryboardTable();
     this.debounceAutoSave();
   },
@@ -2492,6 +2704,7 @@ const App = {
       const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
       const card = document.createElement('div');
       card.className = 'script-card';
+      card.title = '클릭하여 대본 미리보기 팝업 열기';
       const dateStr = s.updatedAt ? new Date(s.updatedAt).toLocaleDateString('ko-KR') : '';
 
       card.innerHTML = `
@@ -2504,36 +2717,38 @@ const App = {
         <div class="script-card-footer">
           <span>${stats.timeFormatted} (${stats.charCountWithSpaces}자) • ${dateStr}</span>
           <div class="script-card-btns">
-            <button class="btn-card-action btn-load">열기</button>
+            <button class="btn-card-action btn-preview">👁️ 미리보기</button>
+            <button class="btn-card-action btn-load">✍️ 열기</button>
             <button class="btn-card-action btn-dup">복제</button>
             <button class="btn-card-action btn-del" style="color: #f87171;">삭제</button>
           </div>
         </div>
       `;
 
-      card.querySelector('.btn-load').addEventListener('click', () => {
-        ScriptService.currentScript = { ...s };
-        if (!ScriptService.currentScript.storyboard || ScriptService.currentScript.storyboard.length === 0) {
-          if (ScriptService.currentScript.content) {
-            ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(ScriptService.currentScript.content);
-          }
-        }
-        if (s.product) {
-          const m = ProductService.getByCode(s.product.productCode);
-          if (m) ProductService.currentSelected = m;
-        }
-        this.updateEditorUI();
-        this.switchView('studio');
-        this.showToast(`[${s.title}] 대본을 불러왔습니다.`);
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.script-card-btns')) return;
+        this.openScriptPreview(s);
       });
 
-      card.querySelector('.btn-dup').addEventListener('click', async () => {
+      card.querySelector('.btn-preview').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openScriptPreview(s);
+      });
+
+      card.querySelector('.btn-load').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.loadScriptToStudio(s);
+      });
+
+      card.querySelector('.btn-dup').addEventListener('click', async (e) => {
+        e.stopPropagation();
         await ScriptService.duplicate(s.id);
         this.renderStorageList(keyword);
         this.showToast('대본이 복제되었습니다.');
       });
 
-      card.querySelector('.btn-del').addEventListener('click', async () => {
+      card.querySelector('.btn-del').addEventListener('click', async (e) => {
+        e.stopPropagation();
         if (confirm(`'${s.title}' 대본을 삭제하시겠습니까?`)) {
           await ScriptService.delete(s.id);
           this.renderStorageList(keyword);
@@ -2543,6 +2758,92 @@ const App = {
 
       container.appendChild(card);
     });
+  },
+
+  previewingScript: null,
+
+  openScriptPreview(s) {
+    if (!s) return;
+    this.previewingScript = s;
+    const modal = document.getElementById('scriptPreviewModal');
+    if (!modal) return;
+
+    // 1. Title & Badges
+    document.getElementById('previewModalTitle').textContent = s.title || '대본 미리보기';
+    const badgesContainer = document.getElementById('previewModalBadges');
+    const brandNm = s.product?.brandNm || '일신비츠온';
+    badgesContainer.innerHTML = `
+      <span class="rec-brand-badge ${brandNm === '홈빛' ? 'badge-homevit' : 'badge-vitson'}">${brandNm}</span>
+      <span style="font-size: 0.72rem; background: #334155; color: #94a3b8; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${ScriptService.getStatusLabel(s.status)}</span>
+    `;
+
+    // 2. Meta
+    const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
+    const dateStr = s.updatedAt ? new Date(s.updatedAt).toLocaleString('ko-KR') : '-';
+    const prodStr = s.product ? `[${s.product.brandNm || ''}] ${s.product.productNm || ''} (${s.product.productCode || '-'})` : '지정된 제품 없음';
+
+    document.getElementById('previewModalMeta').innerHTML = `
+      <div class="script-preview-meta-item">⏱️ 예상 소요: <strong>${stats.timeFormatted}</strong></div>
+      <div class="script-preview-meta-item">📝 글자 수: <strong>${stats.charCountWithSpaces}자</strong></div>
+      <div class="script-preview-meta-item">📦 제품: <strong>${this.escapeHtml(prodStr)}</strong></div>
+      <div class="script-preview-meta-item">📅 최종 수정: <strong>${dateStr}</strong></div>
+    `;
+
+    // 3. Storyboard Rows
+    let rows = s.storyboard;
+    if (!rows || rows.length === 0) {
+      if (s.content) rows = ScriptService.textToStoryboard(s.content);
+      else rows = [];
+    }
+    const tbody = document.getElementById('previewStoryboardTbody');
+    tbody.innerHTML = '';
+    document.getElementById('previewSbRowCount').textContent = `(${rows.length}행)`;
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 25px;">콘티 표 데이터가 없습니다.</td></tr>`;
+    } else {
+      rows.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        const secColor = r.section === '도입' ? '#38bdf8' : r.section === '엔딩' ? '#a78bfa' : '#94a3b8';
+        tr.innerHTML = `
+          <td style="text-align:center; font-weight:700; color:${secColor};">${r.section || '본문'}</td>
+          <td style="text-align:center; color:#64748b; font-weight:700;">${idx + 1}</td>
+          <td style="white-space:pre-wrap; line-height:1.5;">${this.escapeHtml(r.script || '-')}</td>
+          <td style="white-space:pre-wrap; color:#94a3b8; line-height:1.5;">${this.escapeHtml(r.scene || '-')}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 4. Script Text
+    const textEl = document.getElementById('previewScriptText');
+    const textContent = s.content || (rows.length > 0 ? ScriptService.storyboardToText(rows) : '');
+    textEl.textContent = textContent || '(작성된 대본 줄글이 없습니다)';
+
+    // Open modal
+    modal.classList.add('active');
+  },
+
+  loadScriptToStudio(s) {
+    if (!s) return;
+    ScriptService.currentScript = JSON.parse(JSON.stringify(s));
+    if (!ScriptService.currentScript.storyboard || ScriptService.currentScript.storyboard.length === 0) {
+      if (ScriptService.currentScript.content) {
+        ScriptService.currentScript.storyboard = ScriptService.textToStoryboard(ScriptService.currentScript.content);
+      } else {
+        ScriptService.currentScript.storyboard = ScriptService.createBlankStoryboard(15);
+      }
+    }
+    this.reindexStoryboard();
+    if (s.product) {
+      const m = ProductService.getByCode(s.product.productCode);
+      if (m) ProductService.currentSelected = m;
+      else ProductService.currentSelected = s.product;
+    }
+    this.updateEditorUI();
+    this.switchView('studio');
+    document.getElementById('scriptPreviewModal')?.classList.remove('active');
+    this.showToast(`[${s.title}] 대본을 스튜디오로 불러왔습니다.`);
   },
 
   renderTemplateDropdown() {
