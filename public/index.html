@@ -30,6 +30,8 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
+      <button id="btnOpenChangelog" class="btn-header-changelog" title="VCL-Light 최신 업데이트 내역 확인">📢 업데이트 내역</button>
+      <button id="btnOpenUserGuide" class="btn-header-guide" title="초보자도 1분 만에 따라하는 VCL 실무 가이드">❓ 사용 가이드</button>
       <a href="https://vitsonmro.com" target="_blank" rel="noopener noreferrer" class="btn-mro-link">
         🛒 비츠온MRO 바로가기 ↗
       </a>
@@ -71,6 +73,7 @@
           <div class="product-search-bar">
             <input type="text" id="productSearchInput" class="product-search-input" placeholder="원하는 제품명, 모델명 또는 비츠온MRO 상품코드 검색..." />
             <button id="btnSearchProduct" class="btn-search">검색</button>
+            <button id="btnOpenQuickProductModal" class="btn-quick-reg" title="MRO 상품코드 또는 새 제품 직접 등록 & 즉시 AI 기획">➕ 직접 등록</button>
           </div>
 
           <!-- SELECTED PRODUCT DETAIL PANEL -->
@@ -188,6 +191,7 @@
             <button id="btnAiVideoPrompts" class="btn-tool ai-tool">🤖 AI 영상 프롬프트</button>
             
             <div style="margin-left: auto; display: flex; gap: 6px;">
+              <button id="btnPrintStoryboardToolbar" class="btn-tool" title="2단 콘티 A4 1장 깔끔 인쇄">🖨️ 콘티 인쇄</button>
               <button id="btnCopyScript" class="btn-tool" title="대본 본문 클립보드 복사">📋 복사</button>
               <button id="btnExportTxt" class="btn-tool" title="텍스트 파일로 저장">📄 TXT</button>
               <button id="btnExportMd" class="btn-tool" title="마크다운 파일로 저장">📝 MD</button>
@@ -196,7 +200,8 @@
 
           <!-- EDITOR SUB-TABS -->
           <div class="editor-tab-strip">
-            <button class="editor-tab-btn active" data-tab="script">✍️ 대본 본문</button>
+            <button class="editor-tab-btn active" data-tab="storyboard">🎬 2단 콘티(표)</button>
+            <button class="editor-tab-btn" data-tab="script">✍️ 대본 줄글</button>
             <button class="editor-tab-btn" data-tab="notes">📒 아이디어 메모장</button>
             <button class="editor-tab-btn" data-tab="subtitles">💬 자막 타임라인</button>
             <button class="editor-tab-btn" data-tab="prompts">🤖 AI 비디오 샷</button>
@@ -205,8 +210,53 @@
           <!-- EDITOR PANES -->
           <div class="editor-area-wrapper">
 
+            <!-- Pane 0: Storyboard 2-Column Table Editor -->
+            <div id="editorPane_storyboard" class="editor-pane active">
+              <div class="storyboard-toolbar">
+                <div class="storyboard-tools-left">
+                  <button id="btnAddStoryboardRow" class="btn-sb-tool" title="새로운 콘티 행 추가">➕ 행 추가</button>
+                  <button id="btnClearStoryboardTable" class="btn-sb-tool btn-sb-danger" title="콘티 표의 모든 내용을 지우고 기본 15칸 빈 표로 초기화">🗑️ 표 비우기</button>
+                  <button id="btnOpenPasteExcelModal" class="btn-sb-tool" title="엑셀에서 복사한 대본 표 한 번에 붙여넣기">📋 엑셀 붙여넣기</button>
+                  <button id="btnCopyStoryboardExcel" class="btn-sb-tool" title="엑셀에 그대로 붙여넣을 수 있게 복사">📤 엑셀로 복사</button>
+                  <button id="btnSyncScriptToStoryboard" class="btn-sb-tool" title="[대본 줄글] 탭의 텍스트를 콘티 행으로 자동 분할">🔄 줄글 ➔ 표 변환</button>
+                  <button id="btnSyncStoryboardToScript" class="btn-sb-tool" title="현재 콘티 표의 대본을 [대본 줄글] 탭으로 동기화">🔄 표 ➔ 줄글 동기화</button>
+                </div>
+                <div class="storyboard-tools-right">
+                  <button id="btnPrintStoryboardBtn" class="btn-sb-print" title="A4 1장에 꼭 맞게 인쇄 / PDF 저장">🖨️ A4 1장 깔끔 인쇄</button>
+                </div>
+              </div>
+
+              <!-- Printable Storyboard Area -->
+              <div class="storyboard-table-container" id="storyboardPrintArea">
+                <div class="storyboard-print-header">
+                  <h2 id="sbPrintTitle">대본 제목</h2>
+                  <div class="sb-print-meta">
+                    <span id="sbPrintProduct">제품: -</span>
+                    <span id="sbPrintDuration">예상 소요 시간: 0초</span>
+                    <span id="sbPrintChar">글자 수: 0자</span>
+                    <span id="sbPrintDate">일신비츠온 콘텐츠랩</span>
+                  </div>
+                </div>
+
+                <table class="storyboard-table" id="storyboardTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 11%;">구성</th>
+                      <th style="width: 7%;">번호</th>
+                      <th style="width: 44%;">대본 (나레이션 / 대사)</th>
+                      <th style="width: 32%;">장면 (카메라 앵글 / 연출 / 짤)</th>
+                      <th class="col-actions" style="width: 6%;">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody id="storyboardTableBody">
+                    <!-- Dynamic Rows Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <!-- Pane 1: Script Textarea -->
-            <div id="editorPane_script" class="editor-pane active">
+            <div id="editorPane_script" class="editor-pane">
               <textarea id="scriptContent" class="script-textarea" placeholder="여기에 대본을 직접 작성하거나, 상단의 [AI 쇼츠 대본] 또는 [템플릿 적용] 버튼을 눌러보세요..."></textarea>
             </div>
 
@@ -296,13 +346,413 @@
     </div>
   </div>
 
+  <!-- MODAL: QUICK ADD PRODUCT / CUSTOM SPECS -->
+  <div id="customProductModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="customProductModalTitle">⚡ 새 제품 직접 등록 & AI 즉시 기획</h3>
+        <button id="btnCloseCustomProductModal" style="color: var(--text-muted); font-size: 1.2rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+          비츠온MRO 공식몰에 있는 제품 정보나 스펙을 자유롭게 입력하면, VCL이 즉시 인식하여 <strong>Gemini AI 제원 정밀 분석 및 숏폼/롱폼 대본</strong>을 작성해 드립니다.
+        </p>
+        <div class="form-group">
+          <label>제품명 *</label>
+          <input type="text" id="cpInputName" class="form-control" placeholder="예: 비츠온 LED 방등 스퀘어 50W" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>브랜드</label>
+            <select id="cpSelectBrand" class="form-control">
+              <option value="비츠온">비츠온 (Vitson)</option>
+              <option value="홈빛">홈빛 (Homevit)</option>
+              <option value="기타MRO">기타 MRO 브랜드</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>상품코드 또는 모델명</label>
+            <input type="text" id="cpInputCode" class="form-control" placeholder="예: 43332 또는 MFPL-50W" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>규격 / 한줄 특징</label>
+          <input type="text" id="cpInputStandard" class="form-control" placeholder="예: 50W 주광색 6500K 플리커프리" />
+        </div>
+        <div class="form-group">
+          <label>제원 / 상세 스펙 복사 붙여넣기 (자유 양식)</label>
+          <textarea id="cpInputSpecs" class="form-control" rows="5" placeholder="비츠온MRO나 제품 카탈로그의 스펙 표, 설명 문구를 그대로 붙여넣으세요...&#10;예:&#10;정격광속: 4500lm&#10;소비전력: 50W&#10;색온도: 주광색 6500K&#10;연색성: Ra 80 이상&#10;특징: 삼성 LED 칩 사용, 플리커프리 회로"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveCustomProduct" class="btn-save-script">🚀 이 제품으로 AI 기획 시작하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXCEL PASTE STORYBOARD -->
+  <div id="excelPasteModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3>📋 엑셀 / 스프레드시트 대본 표 붙여넣기</h3>
+        <button id="btnCloseExcelPasteModal" style="color: var(--text-muted); font-size: 1.2rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+          기존에 작성하셨던 엑셀 표 영역(구성, 번호, 대본, 장면)을 드래그하여 <strong>Ctrl+C(복사)</strong>하신 후 아래에 <strong>Ctrl+V(붙여넣기)</strong>하세요.<br>
+          <span style="color: #60a5fa;">💡 탭(Tab)으로 구분된 엑셀 행/열을 자동으로 인식하여 2단 콘티 표로 즉시 변환합니다.</span>
+        </p>
+        <textarea id="excelPasteInput" class="form-control" rows="8" placeholder="엑셀에서 복사한 영역을 여기에 붙여넣으세요..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="btnApplyExcelPaste" class="btn-save-script">📥 콘티 표로 가져오기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM SCRIPT OVERWRITE / DESTINATION ANNOUNCEMENT -->
+  <div id="confirmScriptOverwriteModal" class="modal-overlay">
+    <div class="modal-box overwrite-modal-box">
+      <div class="modal-header">
+        <h3 id="overwriteModalTitle">⚠️ [대본 줄글] 생성 및 적용 안내</h3>
+        <button id="btnCloseOverwriteModal" style="color: var(--text-muted); font-size: 1.2rem;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="overwrite-dest-banner">
+          <strong>📌 입력 위치 안내:</strong><br>
+          생성되는 내용은 <strong>[✍️ 대본 줄글]</strong> 탭에 기록됩니다.<br>
+          <span style="font-size: 0.78rem; color: #cbd5e1;">(줄글을 먼저 확인/수정한 뒤, 상단의 <strong>[🔄 줄글 ➔ 표 변환]</strong> 버튼을 누르면 2단 콘티 표로 자동 분할됩니다.)</span>
+        </div>
+
+        <div id="overwriteWarningBox" class="overwrite-warning-box">
+          <strong id="overwriteWarningTitle">⚠️ 기존에 작성 중인 대본이 있습니다!</strong><br>
+          <span id="overwriteWarningMsg">현재 대본 줄글 탭에 작성된 내용이 있습니다. 새 대본을 어떻게 적용할까요?</span>
+        </div>
+      </div>
+      <div class="modal-footer overwrite-actions">
+        <button id="btnOverwriteCancel" class="btn-overwrite-cancel">취소</button>
+        <button id="btnOverwriteAppend" class="btn-overwrite-append">➕ 아래에 이어붙이기</button>
+        <button id="btnOverwriteReplace" class="btn-overwrite-danger">🔄 덮어쓰기 (새로 작성)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETAILED USER GUIDE -->
+  <div id="userGuideModal" class="modal-overlay">
+    <div class="modal-box guide-modal-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">📖</span>
+          <h3 style="margin: 0; font-size: 1.15rem;">VCL-Light 실무 완벽 가이드</h3>
+          <span style="font-size: 0.72rem; background: #1e3a8a; color: #93c5fd; padding: 2px 8px; border-radius: 4px; font-weight: 700;">비츠온 • 홈빛 • MRO 전용</span>
+        </div>
+        <button id="btnCloseUserGuideModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      <div class="modal-body guide-modal-body">
+        
+        <!-- SECTION 1: 화면 구조 한눈에 보기 -->
+        <div class="guide-section">
+          <div class="guide-section-title">🖥️ 1. 화면 구성 한눈에 익히기</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem;">
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #3b82f6;">
+              <strong style="color: #60a5fa;">좌측 패널:</strong> 제품 카탈로그 & 상세 스펙<br>
+              <span style="color: var(--text-muted); font-size: 0.78rem;">선택된 제품의 공식 이미지, 규격표, MRO 원본 링크, Gemini AI 제품 제원 USP 분석기가 위치합니다.</span>
+            </div>
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #10b981;">
+              <strong style="color: #34d399;">우측 메인:</strong> 2단 콘티 & 대본 에디터<br>
+              <span style="color: var(--text-muted); font-size: 0.78rem;">[🎬 2단 콘티(표)]와 [✍️ 대본 줄글]을 넘나들며 편집하고, 실시간 러닝타임 계산 및 A4 가로 인쇄를 지원합니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: 실전 6단계 워크플로우 -->
+        <div class="guide-section">
+          <div class="guide-section-title">🚀 2. 추천 작업 순서 (AI로 1분 만에 쇼츠 만들기)</div>
+          
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 1</span>
+              <span class="guide-step-name">제품 선택하기</span>
+            </div>
+            <div class="guide-step-desc">
+              상단 <strong>추천 카드 5종</strong> 중 마음에 드는 제품을 클릭하거나, 검색창에서 <strong>상품명(예: 방등, 멀티탭)</strong> 또는 <strong>상품코드</strong>를 입력해 검색합니다.<br>
+              <mark>💡 팁:</mark> 아직 DB에 없는 신제품은 검색창 우측 <strong>[➕ 직접 등록]</strong>을 눌러 MRO 스펙을 복사해 넣으면 즉시 기획할 수 있습니다.
+            </div>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 2</span>
+              <span class="guide-step-name">Gemini AI 제원 분석 확인 (선택사항)</span>
+            </div>
+            <div class="guide-step-desc">
+              좌측 패널에서 <strong>[✨ Gemini AI 제품 분석 실행]</strong> 버튼을 누르면, 제품 스펙을 바탕으로 한 <strong>1줄 요약, 핵심 셀링포인트 3개, 바이럴 훅 5선</strong>이 도출됩니다. 대본 작성 전 아이디어를 얻기에 좋습니다.
+            </div>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 3</span>
+              <span class="guide-step-name">AI 대본 생성 (줄글 탭으로 자동 저장)</span>
+            </div>
+            <div class="guide-step-desc">
+              상단 툴바의 <strong>[⚡ AI 쇼츠 대본 (1분)]</strong> 또는 <strong>[🎥 AI 롱폼 대본]</strong> 버튼을 클릭합니다.<br>
+              안내 팝업창에서 확인을 누르면, <strong>[✍️ 대본 줄글] 탭으로 자동 이동</strong>하면서 비츠온/홈빛 맞춤형 대본 초안이 즉시 작성됩니다.<br>
+              <mark>안전 장치:</mark> 기존에 작성 중이던 글이 있다면 덮어쓰지 않고 <strong>[➕ 아래에 이어붙이기]</strong>를 선택해 안전하게 보호할 수 있습니다.
+            </div>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 4</span>
+              <span class="guide-step-name">줄글 대본 검토 및 수정</span>
+            </div>
+            <div class="guide-step-desc">
+              [✍️ 대본 줄글] 탭에서 생성된 대본을 읽어보고, 출연자의 말투나 현장 상황에 맞게 텍스트를 자유롭게 다듬습니다. 좌측의 <strong>[대본에 스펙 삽입]</strong>을 눌러 세부 스펙을 중간에 보강할 수도 있습니다.
+            </div>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 5</span>
+              <span class="guide-step-name">2단 콘티 표로 원클릭 자동 분할</span>
+            </div>
+            <div class="guide-step-desc">
+              줄글 다듬기가 끝났다면, <strong>[🎬 2단 콘티(표)]</strong> 탭으로 이동한 후 상단의 <strong>[🔄 줄글 ➔ 표 변환]</strong> 버튼을 클릭합니다!<br>
+              줄글 문장들이 실무 엑셀 포맷인 <strong>[구성 | 번호 | 대본(나레이션) | 장면(카메라 연출/짤)]</strong> 4개 칸으로 1초 만에 깔끔하게 자동 분할됩니다.
+            </div>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-badge">STEP 6</span>
+              <span class="guide-step-name">표 셀 수정 & A4 1장 가로 인쇄</span>
+            </div>
+            <div class="guide-step-desc">
+              콘티 표 안의 대본이나 장면 연출 칸을 마우스로 클릭해서 글자를 직접 타이핑하여 수정할 수 있습니다.<br>
+              <strong>[🗑️ 표 비우기]:</strong> 언제든 콘티를 새로 짜고 싶을 때 버튼 한 번으로 <strong>기본 15칸 빈 표(도입-본문-엔딩)</strong>로 말끔히 초기화할 수 있습니다. 행 번호는 무조건 1번부터 차례대로 자동 정렬됩니다.<br>
+              최종 검토 후 <strong>[🖨️ A4 1장 깔끔 인쇄]</strong> 버튼을 클릭하면, <strong>A4 가로(Landscape) 1장에 맞춤 출력</strong>되어 촬영 현장 배포용으로 바로 출력/PDF 저장됩니다!
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SECTION 3: 엑셀 파일 연동 -->
+        <div class="guide-section">
+          <div class="guide-section-title">📋 3. 기존 엑셀 대본이 있는 경우 (초고속 연동)</div>
+          <div style="background: rgba(30, 41, 59, 0.6); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); font-size: 0.83rem; line-height: 1.6;">
+            <strong>1) 엑셀에서 가져올 때:</strong> 엑셀의 표 영역을 드래그하여 복사(Ctrl+C)한 후, VCL의 <strong>[📋 엑셀 붙여넣기]</strong>를 누르고 붙여넣기(Ctrl+V)하면 표가 즉시 완성됩니다.<br>
+            <strong>2) VCL에서 엑셀로 내보낼 때:</strong> <strong>[📤 엑셀로 복사]</strong> 버튼을 누르면 엑셀에 그대로 붙여넣을 수 있는 탭 구분 텍스트로 클립보드에 복사됩니다.
+          </div>
+        </div>
+
+        <!-- SECTION 4: 실무 FAQ -->
+        <div class="guide-section" style="margin-bottom: 0;">
+          <div class="guide-section-title">💡 4. 자주 묻는 질문 & 안심 수칙</div>
+          <div class="guide-faq-grid">
+            <div class="guide-faq-item">
+              <div class="guide-faq-q">Q. 사내 전산팀 트래픽 문제는 없나요?</div>
+              <div class="guide-faq-a">비츠온/홈빛 532종 데이터가 사전에 내장되어 검색 및 셔플 모두 로컬에서 100% 안전하게 동작합니다. DB 외 신규 상품도 단 1회 크롤링 후 <strong>로컬 DB에 영구 등록</strong>되므로 중복 트래픽이 발생하지 않습니다.</div>
+            </div>
+            <div class="guide-faq-item">
+              <div class="guide-faq-q">Q. 소요 시간은 어떻게 계산되나요?</div>
+              <div class="guide-faq-a">루미앤 큐브 멀티탭 1분 22초 실측 영상 데이터를 기반으로, <strong>제품 인서트 컷과 자막 호흡(초당 4.62자)</strong>이 정밀 계산됩니다.</div>
+            </div>
+            <div class="guide-faq-item">
+              <div class="guide-faq-q">Q. 인쇄할 때 글자가 잘리지 않나요?</div>
+              <div class="guide-faq-a">A4 가로(Landscape) 최적화 여백과 표 자동 압축 스타일이 적용되어 있어 15~20행 분량도 <strong>잘림 없이 1장에 꼭 맞게</strong> 출력됩니다.</div>
+            </div>
+            <div class="guide-faq-item">
+              <div class="guide-faq-q">Q. 작성 중인 대본 저장 및 열람 방법은?</div>
+              <div class="guide-faq-a">우측 상단 <strong>[💾 대본 저장]</strong> 버튼으로 안전하게 저장됩니다. [📂 대본 보관함]에서 대본 카드를 클릭하면 <strong>[미리보기 팝업]</strong>이 먼저 열려 표 구조와 줄글을 확인한 뒤 스튜디오로 안전하게 불러올 수 있습니다.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button id="btnCloseUserGuideFooter" class="btn-save-script" style="background: #2563eb;">확인했습니다 👍</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SCRIPT PREVIEW (대본 전체 미리보기) -->
+  <div id="scriptPreviewModal" class="modal-overlay">
+    <div class="modal-box script-preview-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">👁️</span>
+          <h3 id="previewModalTitle" style="margin: 0; font-size: 1.15rem; color: #fff;">대본 미리보기</h3>
+          <div id="previewModalBadges" style="display: flex; gap: 6px;"></div>
+        </div>
+        <button id="btnCloseScriptPreviewModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      
+      <div class="script-preview-meta" id="previewModalMeta">
+        <!-- Dynamic meta tags rendered via JS -->
+      </div>
+
+      <div class="script-preview-body">
+        <!-- Section 1: Storyboard Table -->
+        <div>
+          <div class="preview-section-title">
+            <span>🎬 2단 콘티(표) 구조 미리보기</span>
+            <span id="previewSbRowCount" style="font-size: 0.76rem; color: #94a3b8; font-weight: normal;">(0행)</span>
+          </div>
+          <div style="overflow-x: auto; max-height: 380px; border: 1px solid #334155; border-radius: 8px;">
+            <table class="preview-storyboard-table">
+              <thead>
+                <tr>
+                  <th style="width: 12%;">구성</th>
+                  <th style="width: 8%;">번호</th>
+                  <th style="width: 48%;">대본 (나레이션 / 대사)</th>
+                  <th style="width: 32%;">장면 (카메라 / 연출)</th>
+                </tr>
+              </thead>
+              <tbody id="previewStoryboardTbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: Script Text -->
+        <div>
+          <div class="preview-section-title">
+            <span>✍️ 대본 줄글 본문</span>
+          </div>
+          <div id="previewScriptText" class="preview-script-text">
+            (대본 본문 없음)
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: #94a3b8;">💡 미리보기 상태에서는 스튜디오의 작업 중인 대본이 변경되지 않습니다.</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnPreviewPrint" class="btn-card-action" style="padding: 7px 14px; font-size: 0.85rem; background: #334155; color: #f8fafc; border: 1px solid #475569; border-radius: 4px; cursor: pointer;">🖨️ 바로 인쇄</button>
+          <button id="btnPreviewLoadToStudio" class="btn-save-script" style="background: #2563eb; padding: 7px 16px;">✍️ 스튜디오로 불러오기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CHANGELOG / UPDATE HISTORY -->
+  <div id="changelogModal" class="modal-overlay">
+    <div class="modal-box changelog-modal-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">📢</span>
+          <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">VCL-Light 최신 업데이트 내역</h3>
+          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.7 Live</span>
+        </div>
+        <button id="btnCloseChangelogModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+      <div class="modal-body changelog-modal-body">
+        
+        <!-- Ver 2.7 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.7</span>
+            <span class="changelog-date">2026.09.28 (최신)</span>
+            <span class="changelog-badge-new">NEW</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>💾 MRO 크롤링 상품 DB 영구 저장 & 중복 차단:</strong> 비츠온MRO에서 수집한 신규 상품이 브라우저 로컬 DB(localStorage) 및 클라우드에 영구 보관됩니다. 동일 상품코드를 재검색할 경우 크롤링 과정 없이 즉시 정식 DB 상품으로 인식됩니다.</li>
+            <li><strong>🏷️ 추천 카드 [DB] 뱃지 표기:</strong> 상단 추천 카드 영역에 DB 정식 등록 여부를 직관적으로 구분할 수 있는 [DB] (MRO 수집 상품은 [DB(MRO)]) 뱃지를 표시하여 데이터 출처를 명확히 구분합니다.</li>
+            <li><strong>🗑️ 콘티 표 [표 비우기] 버튼 & 기본 15칸 자동 세팅:</strong> 버튼 한 번으로 콘티 표를 비울 수 있으며, 영상 기획의 표준 규격인 기본 15칸(도입-본문-엔딩)으로 말끔하게 초기화됩니다.</li>
+            <li><strong>🔢 행 번호 1번 자동 무조건 정렬:</strong> 행 추가, 삭제, 순서 이동, 엑셀 붙여넣기 등 어떤 작업을 하더라도 행 번호가 무조건 1번부터 차례대로 완벽하게 자동 정렬됩니다.</li>
+            <li><strong>👁️ 대본 보관함 [원클릭 대본 미리보기 모달]:</strong> 보관함에서 대본 카드 클릭 시 작업 중이던 스튜디오를 덮어쓰지 않고, 팝업 창에서 2단 콘티 표와 대본 줄글을 먼저 상세히 확인한 뒤 [스튜디오로 불러오기]를 선택할 수 있습니다.</li>
+          </ul>
+        </div>
+
+        <!-- Ver 2.6 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.6</span>
+            <span class="changelog-date">2026.09.28</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>🌐 MRO 실시간 단건 크롤링 도입:</strong> DB에 없는 상품코드 검색 시 비츠온MRO에서 상품명, 스펙, 고해상도 이미지를 실시간 스크래핑하여 즉시 AI 기획에 활용할 수 있습니다. (전산팀 트래픽 부담 없는 순수 단건 온디맨드 방식)</li>
+            <li><strong>📋 엑셀 붙여넣기 파서 완벽 개선:</strong> 셀 내부 줄바꿈(Alt+Enter)과 따옴표를 완벽 인식(RFC 4180)하여, 대본 글이 잘리거나 장면 열이 비는 현상을 100% 해결했습니다.</li>
+            <li><strong>🖼️ 상세페이지 이미지 전용 모달(Lightbox):</strong> 이미지 클릭 시 새 탭으로 빠져나가지 않고, 스튜디오 화면 내에서 고화질 도면과 스펙을 즉시 확대 확인하고 마우스 휠로 스크롤할 수 있습니다.</li>
+            <li><strong>⚡ 좌측 하단 플로팅 진행률 위젯:</strong> AI 분석, 쇼츠/롱폼 작성, MRO 크롤링 시 화면 좌측 하단에 작업 내용과 실시간 진행률(%)이 세련되게 표시됩니다.</li>
+          </ul>
+        </div>
+
+        <!-- Ver 2.5 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.5</span>
+            <span class="changelog-date">2026.09.28</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>✨ Gemini AI 제원 분석 대본 연동:</strong> AI 제품 분석에서 도출된 타겟 고객군, 핵심 셀링포인트(USP), 5대 바이럴 훅이 쇼츠 및 롱폼 대본 프롬프트에 자동 주입됩니다.</li>
+            <li><strong>🔥 바이럴 훅 원클릭 쇼츠 생성:</strong> 추천 훅 5선 각각에 [⚡ 이 훅으로 작성] 버튼을 추가하여 마음에 드는 오프닝으로 1초 만에 쇼츠 대본을 완성합니다.</li>
+            <li><strong>⚠️ 대본 덮어쓰기 방지 안전 모달:</strong> [대본 줄글] 탭에 기존 작업 내용이 있을 때 임의로 덮어쓰지 않고 [덮어쓰기 / 아래에 이어붙이기 / 취소]를 선택할 수 있도록 개선했습니다.</li>
+          </ul>
+        </div>
+
+        <!-- Ver 2.4 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.4</span>
+            <span class="changelog-date">2026.09.27</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>🖨️ A4 가로(Landscape) 1장 인쇄 최적화:</strong> 2단 콘티 표 인쇄 시 1장에 꼭 맞게 출력되도록 여백과 테이블 비율을 자동 압축했습니다.</li>
+            <li><strong>⏱️ 예상 영상 소요 시간 계산기:</strong> 루미앤 큐브 멀티탭 실측 데이터를 바탕으로 인서트 컷과 초당 자막 호흡을 정밀 연산하는 게이지를 탑재했습니다.</li>
+            <li><strong>📖 VCL 실무 완벽 가이드 모달:</strong> 상단 [❓ 사용 가이드] 버튼을 통해 6단계 작업 워크플로우와 FAQ를 열람할 수 있습니다.</li>
+          </ul>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button id="btnCloseChangelogFooter" class="btn-save-script" style="background: #2563eb;">확인했습니다 👍</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: IMAGE VIEWER (LIGHTBOX) -->
+  <div id="imageViewerModal" class="modal-overlay image-lightbox-overlay">
+    <div class="image-lightbox-container">
+      <div class="image-lightbox-header">
+        <span id="imageViewerTitle" class="image-lightbox-title">제품 상세 이미지</span>
+        <div class="image-lightbox-actions">
+          <a id="btnImageViewerOpenOriginal" href="#" target="_blank" rel="noopener noreferrer" class="btn-lightbox-action" title="새 탭에서 원본 보기">원본 ↗</a>
+          <button id="btnCloseImageViewerModal" class="btn-lightbox-close" title="닫기 (ESC)">✕</button>
+        </div>
+      </div>
+      <div class="image-lightbox-body">
+        <img id="imageViewerImg" src="" alt="확대 이미지" />
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING PROGRESS WIDGET (BOTTOM-LEFT) -->
+  <div id="floatingProgressWidget" class="floating-progress-widget">
+    <div class="fpw-header">
+      <div class="fpw-icon-wrap">
+        <span id="fpwIcon" class="fpw-icon">⚡</span>
+      </div>
+      <div class="fpw-info">
+        <div id="fpwTitle" class="fpw-title">작업 진행 중...</div>
+        <div id="fpwSub" class="fpw-sub">처리 중입니다</div>
+      </div>
+      <span id="fpwPercent" class="fpw-percent">0%</span>
+    </div>
+    <div class="fpw-progress-bar">
+      <div id="fpwProgressFill" class="fpw-progress-fill"></div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Firebase SDK Compat (Zero-module, works directly in any browser & file:// protocol) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-  <!-- Embedded Product Catalog (222 Verified Items) -->
+  <!-- Embedded Product Catalog (532 Verified Items - 비츠온/홈빛/MRO) -->
   <script src="./data/productsData.js"></script>
   <!-- Application Logic -->
   <script src="./js/app-standalone.js"></script>
