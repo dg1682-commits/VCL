@@ -771,6 +771,76 @@ button {
   background: #059669;
 }
 
+/* PRODUCT LINK ROW (대본 대상 제품 연결/수정/숨김) */
+.script-product-row {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-link-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 10px;
+  width: 100%;
+}
+
+.product-link-icon {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.script-product-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #38bdf8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.script-product-input::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.btn-sync-current-prod,
+.btn-clear-prod-link {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.btn-sync-current-prod:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-clear-prod-link {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.btn-clear-prod-link:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
 /* DURATION ESTIMATOR GAUGE */
 .duration-gauge-strip {
   display: flex;
@@ -1575,12 +1645,31 @@ button {
   color: #fff;
 }
 
+.sb-print-product {
+  cursor: pointer;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border-bottom: 1px dashed rgba(59, 130, 246, 0.4);
+  transition: all 0.15s ease;
+}
+
+.sb-print-product:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-bottom-color: #3b82f6;
+}
+
+.sb-print-product:focus {
+  background: rgba(15, 23, 42, 0.9);
+  outline: 1px solid #3b82f6;
+  border-bottom-style: solid;
+}
+
 /* ========================================================
-   PRINT STYLING (A4 1장 최적 맞춤)
+   PRINT STYLING (A4 1장 가로 Landscape 최적 맞춤)
    ======================================================== */
 @media print {
   @page {
-    size: A4 portrait;
+    size: A4 landscape;
     margin: 8mm 8mm 8mm 8mm;
   }
 
@@ -1654,11 +1743,16 @@ button {
   }
 
   .sb-print-meta {
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     color: #333333 !important;
     display: flex !important;
     justify-content: space-between !important;
     font-weight: 600 !important;
+  }
+
+  .sb-print-product.hidden-print,
+  .sb-print-product:empty {
+    display: none !important;
   }
 
   /* Print Table (Excel Exact Replica) */
