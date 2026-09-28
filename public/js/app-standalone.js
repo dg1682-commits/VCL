@@ -171,10 +171,224 @@ const StorageService = {
   }
 };
 
+// 1.5. Usage Tracker Service (전사 통합 AI 토큰 & MRO 크롤링 실시간 집계)
+const UsageTrackerService = {
+  currentActiveModel: CONFIG.gemini.model || 'gemini-3.6-flash',
+  isFallback: false,
+  DAILY_TOKEN_LIMIT: 1000000, // 일일 권장 기준 1,000,000 토큰
+
+  getTodayStr() {
+    const now = new Date();
+    const kstOffset = 9 * 60; // KST UTC+9
+    const localTime = new Date(now.getTime() + (kstOffset + now.getTimezoneOffset()) * 60000);
+    return localTime.toISOString().slice(0, 10);
+  },
+
+  getDateStrDaysAgo(days) {
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    const kstOffset = 9 * 60;
+    const localTime = new Date(d.getTime() + (kstOffset + d.getTimezoneOffset()) * 60000);
+    return localTime.toISOString().slice(0, 10);
+  },
+
+  getLocalUsage(dateStr) {
+    try {
+      const raw = localStorage.getItem(`vcl_usage_${dateStr}`);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return {
+      tokens: 0,
+      promptTokens: 0,
+      candidateTokens: 0,
+      calls: 0,
+      myCalls: 0,
+      crawls: 0
+    };
+  },
+
+  saveLocalUsage(dateStr, data) {
+    try {
+      localStorage.setItem(`vcl_usage_${dateStr}`, JSON.stringify(data));
+    } catch (e) {}
+  },
+
+  async recordAiUsage(usageMetadata, modelUsed, isFallback = false) {
+    this.currentActiveModel = modelUsed;
+    this.isFallback = isFallback;
+    const todayStr = this.getTodayStr();
+
+    const promptTokens = Number(usageMetadata?.promptTokenCount) || 0;
+    const candidateTokens = Number(usageMetadata?.candidatesTokenCount) || 0;
+    const totalTokens = Number(usageMetadata?.totalTokenCount) || (promptTokens + candidateTokens);
+
+    // 1. Update localStorage
+    const local = this.getLocalUsage(todayStr);
+    local.tokens = (local.tokens || 0) + totalTokens;
+    local.promptTokens = (local.promptTokens || 0) + promptTokens;
+    local.candidateTokens = (local.candidateTokens || 0) + candidateTokens;
+    local.calls = (local.calls || 0) + 1;
+    local.myCalls = (local.myCalls || 0) + 1;
+    this.saveLocalUsage(todayStr, local);
+
+    // 2. Update Firestore for cross-PC synchronization
+    try {
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        const inc = firebase.firestore.FieldValue.increment;
+        await firestoreDb.collection('usage_daily').doc(todayStr).set({
+          date: todayStr,
+          totalTokens: inc(totalTokens),
+          promptTokens: inc(promptTokens),
+          candidateTokens: inc(candidateTokens),
+          aiCalls: inc(1),
+          lastModel: modelUsed,
+          isFallback: isFallback,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+    } catch (err) {
+      console.warn('Firestore AI usage tracking warning:', err);
+    }
+  },
+
+  async recordCrawl(productCode, productNm) {
+    const todayStr = this.getTodayStr();
+
+    // 1. Update localStorage
+    const local = this.getLocalUsage(todayStr);
+    local.crawls = (local.crawls || 0) + 1;
+    this.saveLocalUsage(todayStr, local);
+
+    try {
+      const histRaw = localStorage.getItem('vcl_crawl_history');
+      const hist = histRaw ? JSON.parse(histRaw) : [];
+      hist.unshift({
+        timestamp: new Date().toISOString(),
+        date: todayStr,
+        code: String(productCode),
+        name: productNm || ''
+      });
+      if (hist.length > 500) hist.length = 500;
+      localStorage.setItem('vcl_crawl_history', JSON.stringify(hist));
+    } catch (e) {}
+
+    // 2. Update Firestore
+    try {
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        const inc = firebase.firestore.FieldValue.increment;
+        await firestoreDb.collection('usage_daily').doc(todayStr).set({
+          date: todayStr,
+          crawls: inc(1),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+
+        firestoreDb.collection('crawl_logs').add({
+          timestamp: new Date().toISOString(),
+          date: todayStr,
+          productCode: String(productCode),
+          productNm: productNm || ''
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Firestore crawl tracking warning:', err);
+    }
+  },
+
+  async getUsageStats() {
+    const todayStr = this.getTodayStr();
+    const weekStartStr = this.getDateStrDaysAgo(7);
+    const monthStartStr = this.getDateStrDaysAgo(30);
+
+    const localToday = this.getLocalUsage(todayStr);
+
+    let stats = {
+      model: this.currentActiveModel,
+      isFallback: this.isFallback,
+      todayTokens: localToday.tokens || 0,
+      todayPrompt: localToday.promptTokens || 0,
+      todayCandidate: localToday.candidateTokens || 0,
+      todayCalls: localToday.calls || 0,
+      myTodayCalls: localToday.myCalls || localToday.calls || 0,
+      todayCrawls: localToday.crawls || 0,
+      weekCrawls: localToday.crawls || 0,
+      monthCrawls: localToday.crawls || 0,
+      crawledDbTotal: 0,
+      isCloudSynced: false
+    };
+
+    // Local crawl history fallback
+    try {
+      const histRaw = localStorage.getItem('vcl_crawl_history');
+      if (histRaw) {
+        const hist = JSON.parse(histRaw);
+        if (Array.isArray(hist)) {
+          stats.todayCrawls = hist.filter(h => h.date === todayStr).length;
+          stats.weekCrawls = hist.filter(h => h.date >= weekStartStr).length;
+          stats.monthCrawls = hist.filter(h => h.date >= monthStartStr).length;
+        }
+      }
+    } catch (e) {}
+
+    // Query Firestore for cross-PC aggregated data
+    try {
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        const snap = await firestoreDb.collection('usage_daily')
+          .where('date', '>=', monthStartStr)
+          .get();
+
+        if (!snap.empty) {
+          stats.isCloudSynced = true;
+          let weekCrawlsSum = 0;
+          let monthCrawlsSum = 0;
+
+          snap.forEach(doc => {
+            const data = doc.data();
+            const docDate = data.date || doc.id;
+            const crawls = Number(data.crawls) || 0;
+
+            if (docDate === todayStr) {
+              stats.todayTokens = Math.max(stats.todayTokens, Number(data.totalTokens) || 0);
+              stats.todayPrompt = Math.max(stats.todayPrompt, Number(data.promptTokens) || 0);
+              stats.todayCandidate = Math.max(stats.todayCandidate, Number(data.candidateTokens) || 0);
+              stats.todayCalls = Math.max(stats.todayCalls, Number(data.aiCalls) || 0);
+              stats.todayCrawls = Math.max(stats.todayCrawls, crawls);
+              if (data.lastModel) stats.model = data.lastModel;
+              if (typeof data.isFallback === 'boolean') stats.isFallback = data.isFallback;
+            }
+
+            if (docDate >= weekStartStr) {
+              weekCrawlsSum += crawls;
+            }
+            monthCrawlsSum += crawls;
+          });
+
+          stats.weekCrawls = Math.max(stats.weekCrawls, weekCrawlsSum);
+          stats.monthCrawls = Math.max(stats.monthCrawls, monthCrawlsSum);
+        }
+      }
+    } catch (err) {
+      console.warn('Firestore fetch usage warning (using local fallback):', err);
+    }
+
+    // Crawled DB count
+    const savedProducts = MroCrawlerService.getSavedProducts();
+    const inMemCrawled = (window.VCL_PRODUCTS || []).filter(p => p.isCrawled);
+    const uniqueCodes = new Set([
+      ...savedProducts.map(p => String(p.productCode)),
+      ...inMemCrawled.map(p => String(p.productCode))
+    ]);
+    stats.crawledDbTotal = uniqueCodes.size;
+
+    return stats;
+  }
+};
+
 // 2. Gemini AI Service (Direct Browser Fetch - CORS Enabled by Google)
 const GeminiService = {
   async call(prompt, systemInstruction = '', temperature = 0.7) {
-    const url = `${CONFIG.gemini.endpoint}/${CONFIG.gemini.model}:generateContent?key=${CONFIG.gemini.apiKey}`;
+    let activeModel = CONFIG.gemini.model || 'gemini-3.6-flash';
+    let isFallback = false;
+    let url = `${CONFIG.gemini.endpoint}/${activeModel}:generateContent?key=${CONFIG.gemini.apiKey}`;
     const body = {
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
@@ -186,18 +400,60 @@ const GeminiService = {
       body.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok && CONFIG.gemini.fallbackModel) {
+        console.warn(`[GeminiService] ${activeModel} 응답 오류 (${res.status}). Fallback 모델로 우회 시도: ${CONFIG.gemini.fallbackModel}`);
+        activeModel = CONFIG.gemini.fallbackModel;
+        isFallback = true;
+        const fallbackUrl = `${CONFIG.gemini.endpoint}/${activeModel}:generateContent?key=${CONFIG.gemini.apiKey}`;
+        res = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      }
+    } catch (netErr) {
+      if (CONFIG.gemini.fallbackModel) {
+        console.warn(`[GeminiService] 네트워크 오류 발생. Fallback 모델로 우회 시도: ${CONFIG.gemini.fallbackModel}`, netErr);
+        activeModel = CONFIG.gemini.fallbackModel;
+        isFallback = true;
+        const fallbackUrl = `${CONFIG.gemini.endpoint}/${activeModel}:generateContent?key=${CONFIG.gemini.apiKey}`;
+        res = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } else {
+        throw netErr;
+      }
+    }
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Gemini API 에러 (${res.status})`);
+    if (!res || !res.ok) {
+      const err = await res?.json().catch(() => ({})) || {};
+      throw new Error(err.error?.message || `Gemini API 에러 (${res?.status || '네트워크 오류'})`);
     }
 
     const data = await res.json();
+
+    // 토큰 실시간 사용량 기록 (클라우드 & 로컬)
+    if (data.usageMetadata) {
+      UsageTrackerService.recordAiUsage(data.usageMetadata, activeModel, isFallback);
+    } else {
+      const pEst = Math.round(prompt.length / 2);
+      const cEst = Math.round((data.candidates?.[0]?.content?.parts?.[0]?.text || '').length / 2);
+      UsageTrackerService.recordAiUsage({
+        promptTokenCount: pEst,
+        candidatesTokenCount: cEst,
+        totalTokenCount: pEst + cEst
+      }, activeModel, isFallback);
+    }
+
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   },
 
@@ -1268,6 +1524,7 @@ const MroCrawlerService = {
     }
 
     this.saveProductToDb(product);
+    UsageTrackerService.recordCrawl(cleanCode, product.productNm);
     return product;
   },
 
@@ -1692,8 +1949,26 @@ const App = {
 
       document.getElementById('customProductModal')?.classList.remove('active');
       this.selectProduct(customP);
-      this.renderRecommendationCards([customP, ...ProductService.products.slice(0, 4)]);
       this.showToast(`[${name}] 제품이 성공적으로 등록되어 기획 스튜디오에 선택되었습니다! 🚀`, 'success');
+    });
+
+    // 💰 Usage Dashboard Modal Handlers
+    document.getElementById('btnOpenUsageModal')?.addEventListener('click', () => {
+      this.openUsageModal();
+    });
+    document.getElementById('btnCloseUsageModal')?.addEventListener('click', () => {
+      document.getElementById('usageModal')?.classList.remove('active');
+    });
+    document.getElementById('btnCloseUsageFooter')?.addEventListener('click', () => {
+      document.getElementById('usageModal')?.classList.remove('active');
+    });
+    document.getElementById('btnRefreshUsage')?.addEventListener('click', () => {
+      this.loadUsageStats(true);
+    });
+    document.getElementById('usageModal')?.addEventListener('click', e => {
+      if (e.target.id === 'usageModal') {
+        document.getElementById('usageModal')?.classList.remove('active');
+      }
     });
 
     // 📢 Changelog Modal Handlers
@@ -1732,6 +2007,7 @@ const App = {
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         this.closeImageViewer();
+        document.getElementById('usageModal')?.classList.remove('active');
         document.getElementById('changelogModal')?.classList.remove('active');
         document.getElementById('userGuideModal')?.classList.remove('active');
         document.getElementById('confirmScriptOverwriteModal')?.classList.remove('active');
@@ -1993,6 +2269,121 @@ const App = {
 
   closeImageViewer() {
     document.getElementById('imageViewerModal')?.classList.remove('active');
+  },
+
+  openUsageModal() {
+    const modal = document.getElementById('usageModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    this.loadUsageStats();
+  },
+
+  async loadUsageStats(manualRefresh = false) {
+    const refreshBtn = document.getElementById('btnRefreshUsage');
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '⏳ 불러오는 중...';
+    }
+
+    try {
+      const stats = await UsageTrackerService.getUsageStats();
+
+      // 1. Model Status
+      const badgeEl = document.getElementById('usageModelLiveBadge');
+      const healthEl = document.getElementById('usageModelHealth');
+      const primaryModelEl = document.getElementById('usagePrimaryModel');
+      const fallbackModelEl = document.getElementById('usageFallbackModel');
+
+      if (primaryModelEl) primaryModelEl.textContent = `${CONFIG.gemini.model || 'gemini-3.6-flash'} (최신 고속 추론)`;
+      if (fallbackModelEl) fallbackModelEl.textContent = `${CONFIG.gemini.fallbackModel || 'gemini-flash-latest'} (쿼터 초과 시 자동 우회)`;
+
+      if (stats.isFallback) {
+        if (badgeEl) {
+          badgeEl.className = 'usage-status-badge badge-fallback-model';
+          badgeEl.textContent = `⚠️ ${stats.model} (우회 가동 중)`;
+        }
+        if (healthEl) {
+          healthEl.innerHTML = `<span style="color: #fbbf24;">⚠️ 일일 쿼터 조정 등으로 비상 우회 모델(${stats.model}) 가동 중</span>`;
+        }
+      } else {
+        if (badgeEl) {
+          badgeEl.className = 'usage-status-badge badge-active-model';
+          badgeEl.textContent = `⚡ Gemini 3.6 Flash (정상 가동 중)`;
+        }
+        if (healthEl) {
+          healthEl.innerHTML = `<span style="color: #34d399;">● 최신 Gemini 3.6 Flash 모델 정상 응답 중</span>`;
+        }
+      }
+
+      // 2. Token Usage & Gauge
+      const limit = UsageTrackerService.DAILY_TOKEN_LIMIT; // 1,000,000
+      const used = stats.todayTokens;
+      const remain = Math.max(0, limit - used);
+      const remainPct = Math.max(0, Math.min(100, (remain / limit) * 100));
+      const usedPct = (100 - remainPct).toFixed(1);
+
+      const pctEl = document.getElementById('usageTokenRemainPct');
+      const fillEl = document.getElementById('usageProgressFill');
+      const usedTextEl = document.getElementById('usageTokensUsedText');
+      const remainTextEl = document.getElementById('usageTokensRemainText');
+
+      if (pctEl) {
+        pctEl.textContent = `${remainPct.toFixed(1)}% 남음`;
+        if (remainPct < 20) pctEl.style.color = '#ef4444';
+        else if (remainPct < 50) pctEl.style.color = '#fbbf24';
+        else pctEl.style.color = '#10b981';
+      }
+
+      if (fillEl) {
+        fillEl.style.width = `${remainPct}%`;
+        if (remainPct < 20) fillEl.style.background = 'linear-gradient(90deg, #ef4444, #f87171)';
+        else if (remainPct < 50) fillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+        else fillEl.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+      }
+
+      if (usedTextEl) {
+        usedTextEl.textContent = `소모: ${used.toLocaleString()} / ${limit.toLocaleString()} Tokens (${usedPct}% 사용)`;
+      }
+      if (remainTextEl) {
+        remainTextEl.textContent = `잔여: ${remain.toLocaleString()} Tokens`;
+      }
+
+      // Metrics
+      const callsEl = document.getElementById('usageTodayCalls');
+      const myCallsEl = document.getElementById('usageMyCallsText');
+      const promptEl = document.getElementById('usageTodayPromptTokens');
+      const candEl = document.getElementById('usageTodayCandidateTokens');
+
+      if (callsEl) callsEl.textContent = `${stats.todayCalls}회`;
+      if (myCallsEl) myCallsEl.textContent = `(내 브라우저: ${stats.myTodayCalls}회)`;
+      if (promptEl) promptEl.textContent = stats.todayPrompt.toLocaleString();
+      if (candEl) candEl.textContent = stats.todayCandidate.toLocaleString();
+
+      // 3. Crawl Stats
+      const crawlTodayEl = document.getElementById('usageCrawlToday');
+      const crawlWeekEl = document.getElementById('usageCrawlWeek');
+      const crawlMonthEl = document.getElementById('usageCrawlMonth');
+      const crawlDbTotalEl = document.getElementById('usageCrawlDbTotal');
+
+      if (crawlTodayEl) crawlTodayEl.textContent = `${stats.todayCrawls}건`;
+      if (crawlWeekEl) crawlWeekEl.textContent = `${stats.weekCrawls}건`;
+      if (crawlMonthEl) crawlMonthEl.textContent = `${stats.monthCrawls}건`;
+      if (crawlDbTotalEl) crawlDbTotalEl.textContent = stats.crawledDbTotal.toLocaleString();
+
+      if (manualRefresh) {
+        this.showToast('클라우드 실시간 사용량을 최신 동기화했습니다! 🔄', 'success');
+      }
+    } catch (err) {
+      console.warn('loadUsageStats error:', err);
+      if (manualRefresh) {
+        this.showToast('사용량 새로고침 중 오류가 발생했습니다.', 'error');
+      }
+    } finally {
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '🔄 실시간 집계 새로고침';
+      }
+    }
   },
 
   selectProduct(p) {
@@ -2798,6 +3189,7 @@ const App = {
       const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
       const card = document.createElement('div');
       card.className = 'script-card';
+      card.title = '클릭하여 대본 미리보기 팝업 열기';
       const dateStr = s.updatedAt ? new Date(s.updatedAt).toLocaleDateString('ko-KR') : '';
 
       card.innerHTML = `
@@ -2810,8 +3202,8 @@ const App = {
         <div class="script-card-footer">
           <span>${stats.timeFormatted} (${stats.charCountWithSpaces}자) • ${dateStr}</span>
           <div class="script-card-btns">
-            <button class="btn-card-action btn-preview" style="background: rgba(37, 99, 235, 0.2); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.4);">👁️ 미리보기</button>
-            <button class="btn-card-action btn-load">열기</button>
+            <button class="btn-card-action btn-preview">👁️ 미리보기</button>
+            <button class="btn-card-action btn-load">✍️ 열기</button>
             <button class="btn-card-action btn-dup">복제</button>
             <button class="btn-card-action btn-del" style="color: #f87171;">삭제</button>
           </div>
