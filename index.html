@@ -30,6 +30,7 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
+      <button id="btnOpenUsageModal" class="btn-header-usage" title="AI 토큰 사용량 & 비츠온MRO 크롤링 전사 통합 대시보드">💰 사용량 보기</button>
       <button id="btnOpenChangelog" class="btn-header-changelog" title="VCL-Light 최신 업데이트 내역 확인">📢 업데이트 내역</button>
       <button id="btnOpenUserGuide" class="btn-header-guide" title="초보자도 1분 만에 따라하는 VCL 실무 가이드">❓ 사용 가이드</button>
       <a href="https://vitsonmro.com" target="_blank" rel="noopener noreferrer" class="btn-mro-link">
@@ -648,6 +649,128 @@
     </div>
   </div>
 
+  <!-- MODAL: USAGE DASHBOARD (전사 통합 AI 토큰 & MRO 크롤링 현황) -->
+  <div id="usageModal" class="modal-overlay">
+    <div class="modal-box usage-modal-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="modal-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 1.3rem; padding: 6px 10px; border-radius: 8px;">💰</span>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem; color: #fff;">AI & 데이터 전사 통합 사용량 대시보드</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">Google Gemini AI 실시간 토큰 소모율 및 비츠온MRO 크롤링 통계 (전체 PC 클라우드 실시간 동기화)</p>
+          </div>
+        </div>
+        <button id="btnCloseUsageModal" class="btn-modal-close" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="modal-body usage-modal-body">
+        
+        <!-- SECTION 1: AI MODEL STATUS -->
+        <div class="usage-section-card">
+          <div class="usage-section-header">
+            <span class="usage-sec-title">🤖 현재 가동 AI 엔진 & 언어 모델</span>
+            <span id="usageModelLiveBadge" class="usage-status-badge badge-active-model">
+              ⚡ Gemini 3.6 Flash (정상 가동 중)
+            </span>
+          </div>
+          <div class="usage-model-detail-grid">
+            <div class="usage-info-item">
+              <span class="info-label">기본 활성 모델</span>
+              <span id="usagePrimaryModel" class="info-value">gemini-3.6-flash (최신 고속 추론)</span>
+            </div>
+            <div class="usage-info-item">
+              <span class="info-label">비상 우회(Fallback) 모델</span>
+              <span id="usageFallbackModel" class="info-value">gemini-flash-latest (쿼터 초과 시 자동 우회)</span>
+            </div>
+            <div class="usage-info-item">
+              <span class="info-label">현재 모델 가동 상태</span>
+              <span id="usageModelHealth" class="info-value" style="color: #34d399;">● 최신 3.6 Flash 모델 정상 응답 중</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: AI TOKEN USAGE -->
+        <div class="usage-section-card">
+          <div class="usage-section-header">
+            <span class="usage-sec-title">📊 오늘 AI 토큰 소모 및 잔여량 (전사 통합 집계)</span>
+            <span class="usage-target-pill">일일 기준 한도: 1,000,000 Tokens</span>
+          </div>
+
+          <div class="usage-gauge-wrap">
+            <div class="usage-gauge-header">
+              <span class="gauge-title">오늘 토큰 잔여량</span>
+              <span id="usageTokenRemainPct" class="gauge-pct">100.0% 남음</span>
+            </div>
+            <div class="usage-progress-bar">
+              <div id="usageProgressFill" class="usage-progress-fill" style="width: 100%;"></div>
+            </div>
+            <div class="usage-gauge-footer">
+              <span id="usageTokensUsedText">소모: 0 / 1,000,000 Tokens (0.0% 사용)</span>
+              <span id="usageTokensRemainText">잔여: 1,000,000 Tokens</span>
+            </div>
+          </div>
+
+          <div class="usage-metrics-grid">
+            <div class="usage-metric-card">
+              <span class="metric-num" id="usageTodayCalls">0회</span>
+              <span class="metric-label">오늘 전사 AI 호출 수</span>
+              <span class="metric-sub" id="usageMyCallsText">(내 브라우저: 0회)</span>
+            </div>
+            <div class="usage-metric-card">
+              <span class="metric-num" id="usageTodayPromptTokens">0</span>
+              <span class="metric-label">입력(Prompt) 토큰</span>
+              <span class="metric-sub">제품 제원 및 기획 프롬프트</span>
+            </div>
+            <div class="usage-metric-card">
+              <span class="metric-num" id="usageTodayCandidateTokens">0</span>
+              <span class="metric-label">출력(Response) 토큰</span>
+              <span class="metric-sub">생성된 대본 및 분석 결과</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: MRO CRAWLING STATS -->
+        <div class="usage-section-card">
+          <div class="usage-section-header">
+            <span class="usage-sec-title">🌐 비츠온MRO 실시간 크롤링 현황 (전체 PC 누적)</span>
+            <span class="usage-target-pill" style="background: rgba(37, 99, 235, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3);">중복 수집 방지 활성화</span>
+          </div>
+
+          <div class="usage-crawl-grid">
+            <div class="usage-crawl-card">
+              <span class="crawl-period-tag">오늘 (1일)</span>
+              <span class="crawl-count-num" id="usageCrawlToday">0건</span>
+              <span class="crawl-sub">오늘 00시 이후 크롤링</span>
+            </div>
+            <div class="usage-crawl-card">
+              <span class="crawl-period-tag">최근 1주일 (7일)</span>
+              <span class="crawl-count-num" id="usageCrawlWeek">0건</span>
+              <span class="crawl-sub">최근 7일간 누적</span>
+            </div>
+            <div class="usage-crawl-card">
+              <span class="crawl-period-tag">최근 1달 (30일)</span>
+              <span class="crawl-count-num" id="usageCrawlMonth">0건</span>
+              <span class="crawl-sub">최근 30일간 누적</span>
+            </div>
+          </div>
+
+          <div class="usage-crawl-summary-bar">
+            <span>📦 <strong>크롤링 DB 영구 보관 상품:</strong> <span id="usageCrawlDbTotal" style="color: #60a5fa; font-weight: 700;">0</span>개</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">* 한 번 긁어온 상품은 모든 PC가 공유하여 재크롤링 없이 0.1초 만에 즉시 로드됩니다.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button id="btnRefreshUsage" class="btn-refresh-usage" title="Firestore 클라우드 최신 사용량 다시 불러오기">
+          🔄 실시간 집계 새로고침
+        </button>
+        <button id="btnCloseUsageFooter" class="btn-save-script" style="background: #2563eb;">닫기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CHANGELOG / UPDATE HISTORY -->
   <div id="changelogModal" class="modal-overlay">
     <div class="modal-box changelog-modal-box">
@@ -655,18 +778,32 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">📢</span>
           <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">VCL-Light 최신 업데이트 내역</h3>
-          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.7 Live</span>
+          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.8 Live</span>
         </div>
         <button id="btnCloseChangelogModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
       </div>
       <div class="modal-body changelog-modal-body">
+
+        <!-- Ver 2.8 -->
+        <div class="changelog-item">
+          <div class="changelog-item-header">
+            <span class="changelog-ver">v2.8</span>
+            <span class="changelog-date">2026.09.28 (최신)</span>
+            <span class="changelog-badge-new">NEW</span>
+          </div>
+          <ul class="changelog-list">
+            <li><strong>💰 AI 토큰 & MRO 크롤링 전사 통합 대시보드 신설:</strong> 상단 헤더에 [💰 사용량 보기] 버튼이 추가되었습니다. 클릭 시 일일 AI 토큰 잔여량(%), 입력/출력 토큰 세부량, 일일 AI 호출 횟수를 실시간 확인할 수 있습니다.</li>
+            <li><strong>🤖 가동 AI 언어 모델 및 장애 Fallback 실시간 감지:</strong> 현재 서비스 중인 최신 AI 모델(Gemini 3.6 Flash)과 혹시 모를 구글 쿼터 초과 시 안전하게 자동 우회되는 Fallback 모델 가동 상태를 직관적인 상태 뱃지로 확인할 수 있습니다.</li>
+            <li><strong>🌐 MRO 크롤링 1일/1주일/1달 전사 통계:</strong> 전체 사용자가 비츠온MRO에서 긁어온 크롤링 횟수(오늘, 최근 7일, 최근 30일)와 DB에 영구 보관된 상품 총 개수를 집계하여 중복 크롤링 방지 현황을 한눈에 파악할 수 있습니다.</li>
+            <li><strong>☁️ Firebase Firestore 전사 실시간 자동 동기화:</strong> 다른 PC나 동료가 사용한 토큰과 크롤링 기록도 클라우드 DB를 통해 오차 없이 원자적으로 실시간 합산 집계됩니다.</li>
+          </ul>
+        </div>
         
         <!-- Ver 2.7 -->
         <div class="changelog-item">
           <div class="changelog-item-header">
             <span class="changelog-ver">v2.7</span>
-            <span class="changelog-date">2026.09.28 (최신)</span>
-            <span class="changelog-badge-new">NEW</span>
+            <span class="changelog-date">2026.09.28</span>
           </div>
           <ul class="changelog-list">
             <li><strong>💾 MRO 크롤링 상품 DB 영구 저장 & 중복 차단:</strong> 비츠온MRO에서 수집한 신규 상품이 브라우저 로컬 DB(localStorage) 및 클라우드에 영구 보관됩니다. 동일 상품코드를 재검색할 경우 크롤링 과정 없이 즉시 정식 DB 상품으로 인식됩니다.</li>
