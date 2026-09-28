@@ -243,14 +243,29 @@ ${specs}
     }
   },
 
-  async generateShortsScript(p, notes = '') {
+  async generateShortsScript(p, notes = '', aiAnalysis = null, targetHook = '') {
     const sys = `당신은 100만 조회수 쇼츠를 만드는 (주)일신비츠온 전속 크리에이터입니다.
 1인이 기획, 대본, 자막, 촬영, 출연, 편집까지 모두 진행하므로,
 [화면 연출/행동 지문], [대사/나레이션], [화면 텍스트 자막]이 명확히 구분된 50초 내외 숏폼 스크립트를 작성하세요.`;
+
+    let aiContext = '';
+    if (aiAnalysis) {
+      aiContext = `
+[사전 AI 제품 제원 분석 데이터]
+- 1줄 요약: ${aiAnalysis.oneLineSummary || ''}
+- 타겟 고객: ${aiAnalysis.targetAudience || ''}
+- 핵심 셀링포인트(USP): ${(aiAnalysis.sellingPoints || []).join(' / ')}
+- 추천 바이럴 훅: ${(aiAnalysis.viralHooks || []).join(' | ')}
+`;
+    }
+    if (targetHook) {
+      aiContext += `\n[지정 오프닝 훅]: 반드시 다음 문장을 0~5초 오프닝 훅(첫 대사 및 행동 연출)으로 적극 사용하여 시작하세요:\n"${targetHook}"\n`;
+    }
+
     const prompt = `[제품]: ${p.brandNm} ${p.productNm} (${p.standard || ''})
 [모델]: ${p.modelName || ''}
 [추가 메모]: ${notes || '빠르고 강렬한 전개'}
-
+${aiContext}
 다음 구조로 50초 내외(공백 포함 350~450자) 숏폼 대본을 작성해 주세요:
 1. [0~5초] 인트로 훅 (시선 사로잡는 오프닝 대사와 행동)
 2. [5~20초] 문제 상황 & 공감대 형성
@@ -259,11 +274,23 @@ ${specs}
     return await this.call(prompt, sys, 0.7);
   },
 
-  async generateLongFormScript(p, notes = '') {
+  async generateLongFormScript(p, notes = '', aiAnalysis = null) {
     const sys = `당신은 전기/조명/MRO 전문 리뷰 유튜버이자 (주)일신비츠온 콘텐츠 마스터입니다. 초보자도 쉽게 이해할 수 있는 3~4분 분량의 유튜브 롱폼 리뷰 및 설치/사용 가이드 대본을 작성합니다.`;
+    
+    let aiContext = '';
+    if (aiAnalysis) {
+      aiContext = `
+[사전 AI 제품 제원 분석 데이터]
+- 1줄 요약: ${aiAnalysis.oneLineSummary || ''}
+- 타겟 고객: ${aiAnalysis.targetAudience || ''}
+- 핵심 셀링포인트(USP): ${(aiAnalysis.sellingPoints || []).join(' / ')}
+`;
+    }
+
     const prompt = `[제품]: ${p.brandNm} ${p.productNm} (${p.standard || ''})
 [모델]: ${p.modelName || ''}
 [메모]: ${notes}
+${aiContext}
 1. 인트로 (오늘 다룰 주제 및 시청 혜택)
 2. 언박싱 & 외관 디자인/마감 디테일
 3. 핵심 스펙 정밀 분석 (소비전력, 조도, 색온도, 방수 등 실생활 체감 위주)
@@ -1453,7 +1480,64 @@ const App = {
       `;
     }
 
-    document.getElementById('aiAnalysisResult').innerHTML = `<div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">아래 <strong>[Gemini AI 제품 분석 실행]</strong> 버튼을 누르면<br>스펙 기반 핵심 셀링포인트, 타겟층, 바이럴 훅 5종이 도출됩니다.</div>`;
+    if (p.aiAnalysis) {
+      this.renderAiAnalysisResult(p.aiAnalysis);
+    } else {
+      document.getElementById('aiAnalysisResult').innerHTML = `<div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;">아래 <strong>[Gemini AI 제품 분석 실행]</strong> 버튼을 누르면<br>스펙 기반 핵심 셀링포인트, 타겟층, 바이럴 훅 5종이 도출됩니다.</div>`;
+    }
+  },
+
+  renderAiAnalysisResult(res) {
+    if (!res) return;
+    const container = document.getElementById('aiAnalysisResult');
+    if (!container) return;
+
+    let hooksHtml = (res.viralHooks || []).map((h, idx) => `
+      <div class="viral-hook-item" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; padding: 8px 10px; background: rgba(30, 41, 59, 0.6); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
+        <span style="flex: 1; font-size: 0.82rem; color: #f1f5f9; line-height: 1.4;">${h}</span>
+        <div style="display: flex; gap: 4px; flex-shrink: 0;">
+          <button class="btn-copy-hook" onclick="navigator.clipboard.writeText('${h.replace(/'/g, "\\'")}'); App.showToast('복사되었습니다! 📋', 'success');" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; cursor: pointer;">복사</button>
+          <button class="btn-hook-to-script" onclick="App.createScriptFromHook('${h.replace(/'/g, "\\'")}')" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; background: #2563eb; border: none; color: #fff; cursor: pointer; font-weight: 600;" title="이 훅을 첫 문장으로 쇼츠 대본 작성">⚡ 이 훅으로 작성</button>
+        </div>
+      </div>
+    `).join('');
+    let spHtml = (res.sellingPoints || []).map(s => `<li style="margin-bottom: 4px; font-size: 0.82rem; color: #e2e8f0;">${s}</li>`).join('');
+
+    container.innerHTML = `
+      <div class="ai-card-block" style="background: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08);">
+        <h4 style="font-size: 0.86rem; color: #fbbf24; margin-bottom: 6px;">💡 1줄 핵심 요약</h4>
+        <p style="font-size: 0.86rem; color: #fff; font-weight: 600; line-height: 1.4; margin: 0;">${res.oneLineSummary || ''}</p>
+      </div>
+      <div class="ai-card-block" style="background: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08);">
+        <h4 style="font-size: 0.86rem; color: #60a5fa; margin-bottom: 6px;">🎯 추천 타겟 고객</h4>
+        <p style="font-size: 0.82rem; color: #93c5fd; line-height: 1.4; margin: 0;">${res.targetAudience || ''}</p>
+      </div>
+      <div class="ai-card-block" style="background: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.08);">
+        <h4 style="font-size: 0.86rem; color: #34d399; margin-bottom: 6px;">⭐ 스펙 기반 핵심 셀링포인트 (USP)</h4>
+        <ul style="padding-left: 18px; margin: 0;">${spHtml}</ul>
+      </div>
+      <div class="ai-card-block" style="background: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
+        <h4 style="font-size: 0.86rem; color: #f87171; margin-bottom: 8px;">🔥 숏폼/릴스 추천 바이럴 훅 (Hook 5선)</h4>
+        <div>${hooksHtml}</div>
+      </div>
+
+      <!-- 🚀 Direct Actions from Analysis -->
+      <div class="ai-analysis-actions" style="display: flex; gap: 8px; margin-top: 10px;">
+        <button id="btnAiShortsFromAnalysis" class="btn-save-script" style="flex: 1; padding: 9px; font-size: 0.82rem; background: #2563eb; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;">
+          🎬 이 분석으로 쇼츠 작성
+        </button>
+        <button id="btnAiLongformFromAnalysis" class="btn-save-script" style="flex: 1; padding: 9px; font-size: 0.82rem; background: #4f46e5; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;">
+          🎥 이 분석으로 롱폼 작성
+        </button>
+      </div>
+    `;
+
+    document.getElementById('btnAiShortsFromAnalysis')?.addEventListener('click', () => {
+      this.promptScriptInsertion('shorts', mode => this.runAiShorts(mode));
+    });
+    document.getElementById('btnAiLongformFromAnalysis')?.addEventListener('click', () => {
+      this.promptScriptInsertion('longform', mode => this.runAiLongform(mode));
+    });
   },
 
   async runAiAnalysis() {
@@ -1465,33 +1549,10 @@ const App = {
 
     try {
       const res = await GeminiService.analyzeProduct(p);
-      let hooksHtml = (res.viralHooks || []).map(h => `
-        <div class="viral-hook-item">
-          <span>${h}</span>
-          <button class="btn-copy-hook" onclick="navigator.clipboard.writeText('${h.replace(/'/g, "\\'")}'); App.showToast('복사되었습니다! 📋', 'success');">복사</button>
-        </div>
-      `).join('');
-      let spHtml = (res.sellingPoints || []).map(s => `<li>${s}</li>`).join('');
-
-      document.getElementById('aiAnalysisResult').innerHTML = `
-        <div class="ai-card-block">
-          <h4>💡 1줄 핵심 요약</h4>
-          <p style="font-size: 0.88rem; color: #fff; font-weight: 600;">${res.oneLineSummary || ''}</p>
-        </div>
-        <div class="ai-card-block">
-          <h4>🎯 추천 타겟 고객</h4>
-          <p style="font-size: 0.82rem; color: #93c5fd;">${res.targetAudience || ''}</p>
-        </div>
-        <div class="ai-card-block">
-          <h4>⭐ 스펙 기반 핵심 셀링포인트 (USP)</h4>
-          <ul>${spHtml}</ul>
-        </div>
-        <div class="ai-card-block">
-          <h4>🔥 숏폼/릴스 추천 바이럴 훅 (Hook 5선)</h4>
-          <div style="margin-top: 8px;">${hooksHtml}</div>
-        </div>
-      `;
-      this.showToast('AI 분석이 완료되었습니다!', 'success');
+      p.aiAnalysis = res;
+      ProductService.currentAiAnalysis = res;
+      this.renderAiAnalysisResult(res);
+      this.showToast('AI 제원 분석이 완료되었습니다! 아래 버튼으로 대본을 즉시 작성할 수 있습니다. 🚀', 'success');
     } catch (e) {
       this.showToast('AI 분석 에러: ' + e.message, 'error');
     } finally {
@@ -1500,17 +1561,53 @@ const App = {
     }
   },
 
+  createScriptFromHook(hookText) {
+    this.promptScriptInsertion('hook', mode => this.runAiShortsWithHook(mode, hookText));
+  },
+
+  async runAiShortsWithHook(mode = 'replace', hookText = '') {
+    const p = ProductService.currentSelected;
+    if (!p) { this.showToast('제품을 선택해주세요.', 'error'); return; }
+    const btn = document.getElementById('btnAiShorts');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> 훅 기반 대본 작성 중...`;
+    try {
+      const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
+      const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes, aiAnalysis, hookText);
+      if (mode === 'append' && ScriptService.currentScript.content) {
+        ScriptService.currentScript.content = `${ScriptService.currentScript.content}\n\n[추가 생성 대본: 훅 적용]\n${text}`.trim();
+      } else {
+        ScriptService.currentScript.content = text;
+      }
+      ScriptService.currentScript.title = `[쇼츠] ${p.brandNm} ${p.productNm} - ${hookText.slice(0, 15)}...`;
+      this.updateEditorUI();
+      this.switchEditorTab('script');
+      this.showToast(`선택하신 훅으로 쇼츠 대본이 [대본 줄글]에 성공적으로 작성되었습니다! ⚡`, 'success');
+      this.debounceAutoSave();
+    } catch (e) {
+      this.showToast('쇼츠 대본 작성 에러: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `⚡ AI 쇼츠 대본 (1분)`;
+    }
+  },
+
   promptScriptInsertion(type, onConfirm) {
     const curContent = (ScriptService.currentScript?.content || '').trim();
-    if (!curContent) {
-      onConfirm('replace');
+    const modal = document.getElementById('confirmScriptOverwriteModal');
+    if (!modal) {
+      if (curContent && !confirm('현재 대본 줄글에 내용이 있습니다. 덮어쓰시겠습니까? (취소 시 아래에 이어붙임)')) {
+        onConfirm('append');
+      } else {
+        onConfirm('replace');
+      }
       return;
     }
 
-    const modal = document.getElementById('confirmScriptOverwriteModal');
     const titleEl = document.getElementById('overwriteModalTitle');
     const warnTitleEl = document.getElementById('overwriteWarningTitle');
     const warnMsgEl = document.getElementById('overwriteWarningMsg');
+    const warnBox = document.getElementById('overwriteWarningBox');
     const btnReplace = document.getElementById('btnOverwriteReplace');
     const btnAppend = document.getElementById('btnOverwriteAppend');
     const btnCancel = document.getElementById('btnOverwriteCancel');
@@ -1519,42 +1616,84 @@ const App = {
     const typeNames = {
       shorts: '⚡ AI 쇼츠 대본 (1분)',
       longform: '🎥 AI 롱폼 대본',
-      specs: '📋 제품 제원 요약 스펙'
+      specs: '📋 제품 제원 요약 스펙',
+      hook: '🔥 바이럴 훅 기반 쇼츠 대본'
     };
     const actionName = typeNames[type] || '새 대본';
 
-    if (titleEl) titleEl.textContent = `⚠️ [대본 줄글] ${actionName} 적용 안내`;
-    if (warnTitleEl) warnTitleEl.textContent = `⚠️ 현재 대본 줄글에 작성 중인 내용 (${curContent.length}자)이 있습니다!`;
-    if (warnMsgEl) {
-      warnMsgEl.innerHTML = `선택하신 <strong>[${actionName}]</strong> 내용이 <strong>[✍️ 대본 줄글]</strong> 탭에 기록됩니다.<br>기존 작업 내용을 어떻게 처리할까요?`;
+    if (titleEl) titleEl.textContent = `📌 [대본 줄글] ${actionName} 적용 안내`;
+
+    if (!curContent) {
+      // Empty content: confirm creation
+      if (warnBox) {
+        warnBox.style.display = 'block';
+        warnBox.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        warnBox.style.background = 'rgba(30, 58, 138, 0.25)';
+      }
+      if (warnTitleEl) {
+        warnTitleEl.textContent = `📝 새 대본을 [대본 줄글]에 작성하시겠습니까?`;
+        warnTitleEl.style.color = '#93c5fd';
+      }
+      if (warnMsgEl) {
+        warnMsgEl.innerHTML = `선택하신 <strong>[${actionName}]</strong>이(가) <strong>[✍️ 대본 줄글]</strong> 탭에 즉시 작성됩니다.<br><span style="font-size: 0.8rem; color: #cbd5e1;">(작성 후 상단 [🔄 줄글 ➔ 표 변환]을 누르면 2단 콘티 표로 자동 변환됩니다.)</span>`;
+      }
+      if (btnAppend) btnAppend.style.display = 'none';
+      if (btnReplace) {
+        btnReplace.textContent = '🚀 대본 작성 시작';
+        btnReplace.style.background = '#2563eb';
+      }
+    } else {
+      // Content exists: ask overwrite vs append
+      if (warnBox) {
+        warnBox.style.display = 'block';
+        warnBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        warnBox.style.background = 'rgba(239, 68, 68, 0.1)';
+      }
+      if (warnTitleEl) {
+        warnTitleEl.textContent = `⚠️ 현재 작성 중인 대본 (${curContent.length}자)이 있습니다!`;
+        warnTitleEl.style.color = '#fca5a5';
+      }
+      if (warnMsgEl) {
+        warnMsgEl.innerHTML = `선택하신 <strong>[${actionName}]</strong> 내용이 <strong>[✍️ 대본 줄글]</strong> 탭에 추가됩니다.<br>기존 작업 내용을 어떻게 처리할까요?`;
+      }
+      if (btnAppend) {
+        btnAppend.style.display = 'inline-block';
+        btnAppend.textContent = '➕ 아래에 이어붙이기';
+      }
+      if (btnReplace) {
+        btnReplace.textContent = '🔄 덮어쓰기 (새로 작성)';
+        btnReplace.style.background = '#dc2626';
+      }
     }
 
     const newBtnReplace = btnReplace.cloneNode(true);
-    const newBtnAppend = btnAppend.cloneNode(true);
+    const newBtnAppend = btnAppend ? btnAppend.cloneNode(true) : null;
     const newBtnCancel = btnCancel.cloneNode(true);
     const newBtnClose = btnClose.cloneNode(true);
 
     btnReplace.parentNode.replaceChild(newBtnReplace, btnReplace);
-    btnAppend.parentNode.replaceChild(newBtnAppend, btnAppend);
+    if (newBtnAppend && btnAppend) btnAppend.parentNode.replaceChild(newBtnAppend, btnAppend);
     btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
     btnClose.parentNode.replaceChild(newBtnClose, btnClose);
 
-    const closeModal = () => modal?.classList.remove('active');
+    const closeModal = () => modal.classList.remove('active');
 
     newBtnReplace.addEventListener('click', () => {
       closeModal();
       onConfirm('replace');
     });
 
-    newBtnAppend.addEventListener('click', () => {
-      closeModal();
-      onConfirm('append');
-    });
+    if (newBtnAppend) {
+      newBtnAppend.addEventListener('click', () => {
+        closeModal();
+        onConfirm('append');
+      });
+    }
 
     newBtnCancel.addEventListener('click', closeModal);
     newBtnClose.addEventListener('click', closeModal);
 
-    modal?.classList.add('active');
+    modal.classList.add('active');
   },
 
   async runAiShorts(mode = 'replace') {
@@ -1564,7 +1703,8 @@ const App = {
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 대본 작성 중...`;
     try {
-      const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes);
+      const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
+      const text = await GeminiService.generateShortsScript(p, ScriptService.currentScript.notes, aiAnalysis);
       if (mode === 'append' && ScriptService.currentScript.content) {
         ScriptService.currentScript.content = `${ScriptService.currentScript.content}\n\n[추가 생성 대본]\n${text}`.trim();
       } else {
@@ -1572,8 +1712,9 @@ const App = {
       }
       this.updateEditorUI();
       this.switchEditorTab('script');
-      this.showToast('대본이 [✍️ 대본 줄글] 탭에 작성되었습니다! 검토 후 [🔄 줄글 ➔ 표 변환]을 눌러보세요. 🎬', 'success');
-      ScriptService.saveCurrent();
+      const analysisNotice = aiAnalysis ? ' (✨ AI 제품 분석 결과 반영)' : '';
+      this.showToast(`AI 쇼츠 대본이 [대본 줄글] 탭에 작성되었습니다! ✍️${analysisNotice}`, 'success');
+      this.debounceAutoSave();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
     } finally {
@@ -1589,7 +1730,8 @@ const App = {
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner"></span> 롱폼 작성 중...`;
     try {
-      const text = await GeminiService.generateLongFormScript(p, ScriptService.currentScript.notes);
+      const aiAnalysis = p.aiAnalysis || ProductService.currentAiAnalysis || null;
+      const text = await GeminiService.generateLongFormScript(p, ScriptService.currentScript.notes, aiAnalysis);
       if (mode === 'append' && ScriptService.currentScript.content) {
         ScriptService.currentScript.content = `${ScriptService.currentScript.content}\n\n[추가 롱폼 대본]\n${text}`.trim();
       } else {
@@ -1597,8 +1739,9 @@ const App = {
       }
       this.updateEditorUI();
       this.switchEditorTab('script');
-      this.showToast('롱폼 대본이 [✍️ 대본 줄글] 탭에 작성되었습니다! 검토 후 [🔄 줄글 ➔ 표 변환]을 눌러보세요. 🎥', 'success');
-      ScriptService.saveCurrent();
+      const analysisNotice = aiAnalysis ? ' (✨ AI 제품 분석 결과 반영)' : '';
+      this.showToast(`AI 롱폼 대본이 [대본 줄글] 탭에 작성되었습니다! ✍️${analysisNotice}`, 'success');
+      this.debounceAutoSave();
     } catch (e) {
       this.showToast('대본 생성 실패: ' + e.message, 'error');
     } finally {
