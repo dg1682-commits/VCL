@@ -1467,10 +1467,67 @@ const App = {
     // Title, Status, Content inputs
     document.getElementById('scriptTitleInput').addEventListener('input', e => {
       ScriptService.currentScript.title = e.target.value;
+      this.updatePrintHeader();
       this.debounceAutoSave();
     });
     document.getElementById('scriptStatusSelect').addEventListener('change', e => {
       ScriptService.currentScript.status = e.target.value;
+      this.debounceAutoSave();
+    });
+
+    // Product Link & Name Input
+    document.getElementById('scriptProductInput')?.addEventListener('input', e => {
+      const val = e.target.value.trim();
+      if (!ScriptService.currentScript.product) ScriptService.currentScript.product = {};
+      ScriptService.currentScript.product.productNm = val;
+      this.updatePrintHeader();
+      this.debounceAutoSave();
+    });
+
+    document.getElementById('btnSyncCurrentProduct')?.addEventListener('click', () => {
+      const p = ProductService.currentSelected;
+      if (!p) {
+        this.showToast('왼쪽 추천/검색창에서 선택된 제품이 없습니다.', 'error');
+        return;
+      }
+      ScriptService.currentScript.product = {
+        productCode: p.productCode,
+        productNm: p.productNm,
+        brandNm: p.brandNm,
+        standard: p.standard,
+        modelName: p.modelName,
+        pictureNm: p.pictureNm
+      };
+      const prodInput = document.getElementById('scriptProductInput');
+      if (prodInput) prodInput.value = `[${p.brandNm}] ${p.productNm}`;
+      this.updatePrintHeader();
+      this.debounceAutoSave();
+      this.showToast(`대상 제품을 [${p.brandNm}] ${p.productNm}(으)로 변경했습니다! 🔄`, 'success');
+    });
+
+    document.getElementById('btnClearProductLink')?.addEventListener('click', () => {
+      if (ScriptService.currentScript.product) {
+        ScriptService.currentScript.product.productNm = '';
+      }
+      const prodInput = document.getElementById('scriptProductInput');
+      if (prodInput) prodInput.value = '';
+      this.updatePrintHeader();
+      this.debounceAutoSave();
+      this.showToast('제품명 표시를 숨김 처리했습니다. (인쇄 시 제품명 미출력)', 'info');
+    });
+
+    // Directly editable Print Header Product text
+    document.getElementById('sbPrintProduct')?.addEventListener('input', e => {
+      let text = e.target.innerText.replace(/^제품:\s*/, '').trim();
+      const prodInput = document.getElementById('scriptProductInput');
+      if (prodInput) prodInput.value = text;
+      if (!ScriptService.currentScript.product) ScriptService.currentScript.product = {};
+      ScriptService.currentScript.product.productNm = text;
+      if (!text) {
+        e.target.classList.add('hidden-print');
+      } else {
+        e.target.classList.remove('hidden-print');
+      }
       this.debounceAutoSave();
     });
     document.getElementById('scriptContent').addEventListener('input', e => {
@@ -1947,17 +2004,24 @@ const App = {
 
     this.renderProductDetail(p);
 
-    if (!ScriptService.currentScript.content) {
-      ScriptService.currentScript.product = {
-        productCode: p.productCode,
-        productNm: p.productNm,
-        brandNm: p.brandNm,
-        standard: p.standard,
-        modelName: p.modelName,
-        pictureNm: p.pictureNm
-      };
-      ScriptService.currentScript.title = `[${p.brandNm}] ${p.productNm} 콘텐츠 기획`;
-      this.updateEditorUI();
+    const s = ScriptService.currentScript;
+    if (s) {
+      // If current script has no content, OR if its product was the default sample (1010043332), OR if no product is attached:
+      const isDefaultSample = s.product?.productCode === '1010043332' || !s.product?.productNm;
+      if (!s.content || isDefaultSample) {
+        s.product = {
+          productCode: p.productCode,
+          productNm: p.productNm,
+          brandNm: p.brandNm,
+          standard: p.standard,
+          modelName: p.modelName,
+          pictureNm: p.pictureNm
+        };
+        if (!s.content || s.title?.includes('루미앤 큐브 멀티탭') || !s.title) {
+          s.title = `[${p.brandNm}] ${p.productNm} 콘텐츠 기획`;
+        }
+        this.updateEditorUI();
+      }
     }
   },
 
@@ -2417,6 +2481,15 @@ const App = {
     const s = ScriptService.currentScript;
     document.getElementById('scriptTitleInput').value = s.title || '';
     document.getElementById('scriptStatusSelect').value = s.status || 'planning';
+
+    const prodInput = document.getElementById('scriptProductInput');
+    if (prodInput) {
+      if (s.product && s.product.productNm) {
+        prodInput.value = s.product.brandNm ? `[${s.product.brandNm}] ${s.product.productNm}` : s.product.productNm;
+      } else {
+        prodInput.value = '';
+      }
+    }
     document.getElementById('scriptContent').value = s.content || '';
     document.getElementById('notepadContent').value = s.notes || '';
     document.getElementById('subtitlesOutput').textContent = s.subtitles || '대본 툴바의 [자막 분할] 버튼을 누르면 타임라인 자막이 생성됩니다.';
@@ -2656,7 +2729,16 @@ const App = {
     const s = ScriptService.currentScript;
     if (!s) return;
     const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
-    const prodName = s.product ? `[${s.product.brandNm}] ${s.product.productNm}` : '일신비츠온 정품';
+    
+    // Check if custom product text or s.product
+    let rawProdName = '';
+    const prodInput = document.getElementById('scriptProductInput');
+    if (prodInput && prodInput.value.trim()) {
+      rawProdName = prodInput.value.trim();
+    } else if (s.product && s.product.productNm) {
+      rawProdName = s.product.brandNm ? `[${s.product.brandNm}] ${s.product.productNm}` : s.product.productNm;
+    }
+
     const elTitle = document.getElementById('sbPrintTitle');
     const elProd = document.getElementById('sbPrintProduct');
     const elDur = document.getElementById('sbPrintDuration');
@@ -2664,7 +2746,18 @@ const App = {
     const elDate = document.getElementById('sbPrintDate');
 
     if (elTitle) elTitle.textContent = s.title || '콘텐츠 제작 2단 콘티';
-    if (elProd) elProd.textContent = `제품: ${prodName}`;
+    
+    if (elProd) {
+      if (!rawProdName || rawProdName === '-' || rawProdName.toLowerCase() === 'none') {
+        elProd.textContent = '';
+        elProd.classList.add('hidden-print');
+        elProd.style.display = 'none';
+      } else {
+        elProd.classList.remove('hidden-print');
+        elProd.style.display = '';
+        elProd.textContent = rawProdName.startsWith('제품:') ? rawProdName : `제품: ${rawProdName}`;
+      }
+    }
     if (elDur) elDur.textContent = `예상 소요 시간: ${stats.timeFormatted}`;
     if (elChar) elChar.textContent = `글자 수: ${stats.charCountWithSpaces}자 (${s.storyboard?.length || 0}개 씬)`;
     if (elDate) elDate.textContent = `(주)일신비츠온 콘텐츠랩 • ${new Date().toLocaleDateString('ko-KR')}`;
