@@ -1732,61 +1732,24 @@ const App = {
       this.debounceAutoSave();
     });
 
-    // Product Link & Name Input
-    document.getElementById('scriptProductInput')?.addEventListener('input', e => {
-      const val = e.target.value.trim();
-      if (!ScriptService.currentScript.product) ScriptService.currentScript.product = {};
-      ScriptService.currentScript.product.productNm = val;
-      this.updatePrintHeader();
-      this.debounceAutoSave();
-    });
-
-    document.getElementById('btnSyncCurrentProduct')?.addEventListener('click', () => {
-      const p = ProductService.currentSelected;
-      if (!p) {
-        this.showToast('왼쪽 추천/검색창에서 선택된 제품이 없습니다.', 'error');
-        return;
-      }
-      ScriptService.currentScript.product = {
-        productCode: p.productCode,
-        productNm: p.productNm,
-        brandNm: p.brandNm,
-        standard: p.standard,
-        modelName: p.modelName,
-        pictureNm: p.pictureNm
-      };
-      const prodInput = document.getElementById('scriptProductInput');
-      if (prodInput) prodInput.value = `[${p.brandNm}] ${p.productNm}`;
-      this.updatePrintHeader();
-      this.debounceAutoSave();
-      this.showToast(`대상 제품을 [${p.brandNm}] ${p.productNm}(으)로 변경했습니다! 🔄`, 'success');
-    });
-
-    document.getElementById('btnClearProductLink')?.addEventListener('click', () => {
-      if (ScriptService.currentScript.product) {
-        ScriptService.currentScript.product.productNm = '';
-      }
-      const prodInput = document.getElementById('scriptProductInput');
-      if (prodInput) prodInput.value = '';
-      this.updatePrintHeader();
-      this.debounceAutoSave();
-      this.showToast('제품명 표시를 숨김 처리했습니다. (인쇄 시 제품명 미출력)', 'info');
-    });
-
-    // Directly editable Print Header Product text
-    document.getElementById('sbPrintProduct')?.addEventListener('input', e => {
-      let text = e.target.innerText.replace(/^제품:\s*/, '').trim();
-      const prodInput = document.getElementById('scriptProductInput');
-      if (prodInput) prodInput.value = text;
-      if (!ScriptService.currentScript.product) ScriptService.currentScript.product = {};
-      ScriptService.currentScript.product.productNm = text;
-      if (!text) {
-        e.target.classList.add('hidden-print');
+    // Collapsible AI & Spec Tools
+    document.getElementById('btnToggleAiTools')?.addEventListener('click', () => {
+      const container = document.getElementById('aiToolsCollapsible');
+      const textSpan = document.getElementById('btnToggleAiToolsText');
+      const btn = document.getElementById('btnToggleAiTools');
+      if (!container) return;
+      const isHidden = container.style.display === 'none';
+      if (isHidden) {
+        container.style.display = 'flex';
+        btn?.classList.add('active');
+        if (textSpan) textSpan.textContent = '✨ AI & 보조 도구 접기 ▴';
       } else {
-        e.target.classList.remove('hidden-print');
+        container.style.display = 'none';
+        btn?.classList.remove('active');
+        if (textSpan) textSpan.textContent = '✨ AI & 보조 도구 펼치기 ▾';
       }
-      this.debounceAutoSave();
     });
+
     document.getElementById('scriptContent').addEventListener('input', e => {
       ScriptService.currentScript.content = e.target.value;
       this.updateStats();
@@ -1797,11 +1760,60 @@ const App = {
       this.debounceAutoSave();
     });
 
-    // Save
-    document.getElementById('btnSaveScript').addEventListener('click', async () => {
+    // Save Button -> 무조건 확인 팝업 모달
+    document.getElementById('btnSaveScript').addEventListener('click', () => {
+      this.openSaveModal();
+    });
+
+    // Save Confirmation Modal Handlers
+    document.getElementById('btnCloseSaveModal')?.addEventListener('click', () => {
+      document.getElementById('saveScriptConfirmModal')?.classList.remove('active');
+    });
+    document.getElementById('btnCancelSave')?.addEventListener('click', () => {
+      document.getElementById('saveScriptConfirmModal')?.classList.remove('active');
+    });
+    document.getElementById('btnSaveOverwrite')?.addEventListener('click', async () => {
+      const newTitle = document.getElementById('saveModalTitleInput')?.value.trim();
+      if (newTitle) {
+        ScriptService.currentScript.title = newTitle;
+        const titleInput = document.getElementById('scriptTitleInput');
+        if (titleInput) titleInput.value = newTitle;
+      }
+      if (ScriptService.currentScript.isLocked) {
+        ScriptService.currentScript.isLocked = false;
+      }
       await ScriptService.saveCurrent();
-      this.showToast('대본이 안전하게 저장되었습니다! 💾', 'success');
+      this.updateEditorUI();
       this.renderStorageList();
+      document.getElementById('saveScriptConfirmModal')?.classList.remove('active');
+      this.showToast('대본이 안전하게 덮어쓰기 저장되었습니다! 💾', 'success');
+    });
+    document.getElementById('btnSaveAsNew')?.addEventListener('click', async () => {
+      const newTitle = document.getElementById('saveModalTitleInput')?.value.trim();
+      if (newTitle) {
+        ScriptService.currentScript.title = newTitle;
+        const titleInput = document.getElementById('scriptTitleInput');
+        if (titleInput) titleInput.value = newTitle;
+      }
+      ScriptService.currentScript.id = 'script_' + Date.now();
+      ScriptService.currentScript.isLocked = false;
+      ScriptService.currentScript.createdAt = new Date().toISOString();
+      await ScriptService.saveCurrent();
+      this.updateEditorUI();
+      this.renderStorageList();
+      document.getElementById('saveScriptConfirmModal')?.classList.remove('active');
+      this.showToast('새로운 대본으로 성공적으로 분리 저장되었습니다! ➕💾', 'success');
+    });
+
+    // Clear Table Modal Handlers
+    document.getElementById('btnCloseClearTableModal')?.addEventListener('click', () => {
+      document.getElementById('clearTableConfirmModal')?.classList.remove('active');
+    });
+    document.getElementById('btnCancelClearTable')?.addEventListener('click', () => {
+      document.getElementById('clearTableConfirmModal')?.classList.remove('active');
+    });
+    document.getElementById('btnConfirmClearTable')?.addEventListener('click', () => {
+      this.executeClearStoryboardTable();
     });
 
     // Toolbar actions
@@ -2007,6 +2019,8 @@ const App = {
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         this.closeImageViewer();
+        document.getElementById('saveScriptConfirmModal')?.classList.remove('active');
+        document.getElementById('clearTableConfirmModal')?.classList.remove('active');
         document.getElementById('usageModal')?.classList.remove('active');
         document.getElementById('changelogModal')?.classList.remove('active');
         document.getElementById('userGuideModal')?.classList.remove('active');
@@ -2030,7 +2044,7 @@ const App = {
     });
 
     document.getElementById('btnClearStoryboardTable')?.addEventListener('click', () => {
-      this.clearStoryboardTable();
+      this.promptClearStoryboardTable();
     });
 
     document.getElementById('btnOpenPasteExcelModal')?.addEventListener('click', () => {
@@ -2873,14 +2887,11 @@ const App = {
     document.getElementById('scriptTitleInput').value = s.title || '';
     document.getElementById('scriptStatusSelect').value = s.status || 'planning';
 
-    const prodInput = document.getElementById('scriptProductInput');
-    if (prodInput) {
-      if (s.product && s.product.productNm) {
-        prodInput.value = s.product.brandNm ? `[${s.product.brandNm}] ${s.product.productNm}` : s.product.productNm;
-      } else {
-        prodInput.value = '';
-      }
+    const lockBadge = document.getElementById('currentScriptLockBadge');
+    if (lockBadge) {
+      lockBadge.style.display = s.isLocked ? 'inline-flex' : 'none';
     }
+
     document.getElementById('scriptContent').value = s.content || '';
     document.getElementById('notepadContent').value = s.notes || '';
     document.getElementById('subtitlesOutput').textContent = s.subtitles || '대본 툴바의 [자막 분할] 버튼을 누르면 타임라인 자막이 생성됩니다.';
@@ -2913,15 +2924,99 @@ const App = {
     }
   },
 
-  clearStoryboardTable() {
-    if (confirm('콘티 표의 모든 내용을 지우고 기본 15칸 빈 표로 초기화하시겠습니까?\n(작성 중이던 대본과 연출 내용이 모두 비워집니다)')) {
-      ScriptService.currentScript.storyboard = ScriptService.createBlankStoryboard(15);
-      this.reindexStoryboard();
-      this.renderStoryboardTable();
-      this.updateStats();
-      this.debounceAutoSave();
-      this.showToast('콘티 표를 기본 15칸 빈 표로 초기화했습니다. 🗑️', 'info');
+  lastClearedBackup: null,
+
+  promptClearStoryboardTable() {
+    const modal = document.getElementById('clearTableConfirmModal');
+    if (modal) {
+      modal.classList.add('active');
+    } else {
+      if (confirm('콘티 표의 모든 내용을 지우고 기본 15칸 빈 표로 초기화하시겠습니까?')) {
+        this.executeClearStoryboardTable();
+      }
     }
+  },
+
+  executeClearStoryboardTable() {
+    document.getElementById('clearTableConfirmModal')?.classList.remove('active');
+    const cur = ScriptService.currentScript;
+    if (!cur) return;
+
+    // 원본 대본 내용 백업 보관 (되살리기용)
+    this.lastClearedBackup = {
+      storyboard: JSON.parse(JSON.stringify(cur.storyboard || [])),
+      content: cur.content || ''
+    };
+
+    // 15칸 빈 표로 초기화
+    cur.storyboard = ScriptService.createBlankStoryboard(15);
+    cur.content = '';
+    const scriptContentEl = document.getElementById('scriptContent');
+    if (scriptContentEl) scriptContentEl.value = '';
+
+    this.reindexStoryboard();
+    this.renderStoryboardTable();
+    this.updateStats();
+
+    // ⚠️ CRITICAL: 자동저장(debounceAutoSave) 절대 실행 안 함! 기존 DB 대본 보존!
+
+    this.showUndoToast('콘티 표를 15칸 빈 표로 비웠습니다. (자동 저장 안 됨) 🗑️', () => {
+      this.restoreClearedStoryboard();
+    });
+  },
+
+  restoreClearedStoryboard() {
+    if (!this.lastClearedBackup || !ScriptService.currentScript) return;
+    ScriptService.currentScript.storyboard = this.lastClearedBackup.storyboard;
+    ScriptService.currentScript.content = this.lastClearedBackup.content;
+    const scriptContentEl = document.getElementById('scriptContent');
+    if (scriptContentEl) scriptContentEl.value = this.lastClearedBackup.content;
+
+    this.reindexStoryboard();
+    this.renderStoryboardTable();
+    this.updateStats();
+    this.lastClearedBackup = null;
+    this.showToast('콘티 표가 이전 작성 내용으로 되살아났습니다! ↩️✨', 'success');
+  },
+
+  openSaveModal() {
+    const s = ScriptService.currentScript;
+    if (!s) return;
+    const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
+    const modal = document.getElementById('saveScriptConfirmModal');
+    if (!modal) return;
+
+    const titleInput = document.getElementById('saveModalTitleInput');
+    if (titleInput) titleInput.value = s.title || '';
+
+    const charCountEl = document.getElementById('saveModalCharCount');
+    if (charCountEl) charCountEl.textContent = `${stats.charCountWithSpaces}자`;
+
+    const rowCountEl = document.getElementById('saveModalRowCount');
+    if (rowCountEl) rowCountEl.textContent = `${s.storyboard?.length || 0}행`;
+
+    const statusBadgeEl = document.getElementById('saveModalStatusBadge');
+    if (statusBadgeEl) statusBadgeEl.textContent = ScriptService.getStatusLabel(s.status);
+
+    const lockWarningEl = document.getElementById('saveModalLockWarning');
+    const overwriteBtn = document.getElementById('btnSaveOverwrite');
+
+    if (s.isLocked) {
+      if (lockWarningEl) lockWarningEl.style.display = 'block';
+      if (overwriteBtn) {
+        overwriteBtn.textContent = '🔓 잠금 해제하고 덮어쓰기';
+        overwriteBtn.style.background = '#dc2626';
+      }
+    } else {
+      if (lockWarningEl) lockWarningEl.style.display = 'none';
+      if (overwriteBtn) {
+        overwriteBtn.textContent = '💾 기존 대본에 덮어쓰기';
+        overwriteBtn.style.background = '#2563eb';
+      }
+    }
+
+    modal.classList.add('active');
+    setTimeout(() => titleInput?.focus(), 100);
   },
 
   renderStoryboardTable() {
@@ -3120,35 +3215,13 @@ const App = {
     const s = ScriptService.currentScript;
     if (!s) return;
     const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
-    
-    // Check if custom product text or s.product
-    let rawProdName = '';
-    const prodInput = document.getElementById('scriptProductInput');
-    if (prodInput && prodInput.value.trim()) {
-      rawProdName = prodInput.value.trim();
-    } else if (s.product && s.product.productNm) {
-      rawProdName = s.product.brandNm ? `[${s.product.brandNm}] ${s.product.productNm}` : s.product.productNm;
-    }
 
     const elTitle = document.getElementById('sbPrintTitle');
-    const elProd = document.getElementById('sbPrintProduct');
     const elDur = document.getElementById('sbPrintDuration');
     const elChar = document.getElementById('sbPrintChar');
     const elDate = document.getElementById('sbPrintDate');
 
     if (elTitle) elTitle.textContent = s.title || '콘텐츠 제작 2단 콘티';
-    
-    if (elProd) {
-      if (!rawProdName || rawProdName === '-' || rawProdName.toLowerCase() === 'none') {
-        elProd.textContent = '';
-        elProd.classList.add('hidden-print');
-        elProd.style.display = 'none';
-      } else {
-        elProd.classList.remove('hidden-print');
-        elProd.style.display = '';
-        elProd.textContent = rawProdName.startsWith('제품:') ? rawProdName : `제품: ${rawProdName}`;
-      }
-    }
     if (elDur) elDur.textContent = `예상 소요 시간: ${stats.timeFormatted}`;
     if (elChar) elChar.textContent = `글자 수: ${stats.charCountWithSpaces}자 (${s.storyboard?.length || 0}개 씬)`;
     if (elDate) elDate.textContent = `(주)일신비츠온 콘텐츠랩 • ${new Date().toLocaleDateString('ko-KR')}`;
@@ -3163,6 +3236,10 @@ const App = {
   },
 
   debounceAutoSave() {
+    if (ScriptService.currentScript?.isLocked) {
+      console.log('Script is locked. AutoSave skipped.');
+      return;
+    }
     clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(async () => {
       await ScriptService.saveCurrent();
@@ -3188,13 +3265,16 @@ const App = {
     filtered.forEach(s => {
       const stats = ScriptService.calculateStats(s.storyboard?.length ? s.storyboard : s.content);
       const card = document.createElement('div');
-      card.className = 'script-card';
-      card.title = '클릭하여 대본 미리보기 팝업 열기';
+      card.className = `script-card ${s.isLocked ? 'is-locked' : ''}`;
+      card.title = s.isLocked ? '🔒 자물쇠로 잠긴 대본 (클릭하여 미리보기)' : '클릭하여 대본 미리보기 팝업 열기';
       const dateStr = s.updatedAt ? new Date(s.updatedAt).toLocaleDateString('ko-KR') : '';
 
       card.innerHTML = `
         <div class="script-card-header">
-          <span class="rec-brand-badge ${s.product?.brandNm === '홈빛' ? 'badge-homevit' : 'badge-vitson'}">${s.product?.brandNm || '일신비츠온'}</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="rec-brand-badge ${s.product?.brandNm === '홈빛' ? 'badge-homevit' : 'badge-vitson'}">${s.product?.brandNm || '일신비츠온'}</span>
+            ${s.isLocked ? '<span class="script-lock-tag" title="자물쇠로 잠김 - 변경/삭제 방지">🔒 잠김</span>' : ''}
+          </div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">${ScriptService.getStatusLabel(s.status)}</span>
         </div>
         <div class="script-card-title">${s.title}</div>
@@ -3202,10 +3282,13 @@ const App = {
         <div class="script-card-footer">
           <span>${stats.timeFormatted} (${stats.charCountWithSpaces}자) • ${dateStr}</span>
           <div class="script-card-btns">
+            <button class="btn-card-action btn-lock ${s.isLocked ? 'locked' : ''}" title="${s.isLocked ? '자물쇠 풀기 (잠금 해제)' : '대본 잠금 (실수 변경 방지)'}">
+              ${s.isLocked ? '🔒 잠김' : '🔓 잠금'}
+            </button>
             <button class="btn-card-action btn-preview">👁️ 미리보기</button>
             <button class="btn-card-action btn-load">✍️ 열기</button>
             <button class="btn-card-action btn-dup">복제</button>
-            <button class="btn-card-action btn-del" style="color: #f87171;">삭제</button>
+            <button class="btn-card-action btn-del" style="color: ${s.isLocked ? '#64748b' : '#f87171'};" ${s.isLocked ? 'title="잠긴 대본은 삭제할 수 없습니다"' : ''}>삭제</button>
           </div>
         </div>
       `;
@@ -3213,6 +3296,18 @@ const App = {
       card.addEventListener('click', (e) => {
         if (e.target.closest('.script-card-btns')) return;
         this.openScriptPreview(s);
+      });
+
+      card.querySelector('.btn-lock').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        s.isLocked = !s.isLocked;
+        if (ScriptService.currentScript && ScriptService.currentScript.id === s.id) {
+          ScriptService.currentScript.isLocked = s.isLocked;
+          this.updateEditorUI();
+        }
+        await StorageService.saveScript(s);
+        this.renderStorageList(keyword);
+        this.showToast(s.isLocked ? `'${s.title}' 대본이 안전하게 잠겼습니다 🔒` : `'${s.title}' 대본 잠금이 해제되었습니다 🔓`, 'info');
       });
 
       card.querySelector('.btn-preview').addEventListener('click', (e) => {
@@ -3234,6 +3329,10 @@ const App = {
 
       card.querySelector('.btn-del').addEventListener('click', async (e) => {
         e.stopPropagation();
+        if (s.isLocked) {
+          this.showToast('🔒 자물쇠로 잠긴 대본은 삭제할 수 없습니다. 먼저 자물쇠를 해제해주세요.', 'warning');
+          return;
+        }
         if (confirm(`'${s.title}' 대본을 삭제하시겠습니까?`)) {
           await ScriptService.delete(s.id);
           this.renderStorageList(keyword);
@@ -3259,6 +3358,7 @@ const App = {
     const brandNm = s.product?.brandNm || '일신비츠온';
     badgesContainer.innerHTML = `
       <span class="rec-brand-badge ${brandNm === '홈빛' ? 'badge-homevit' : 'badge-vitson'}">${brandNm}</span>
+      ${s.isLocked ? '<span class="script-lock-tag" style="font-size: 0.72rem; padding: 2px 7px;">🔒 잠김</span>' : ''}
       <span style="font-size: 0.72rem; background: #334155; color: #94a3b8; padding: 2px 7px; border-radius: 4px; font-weight: 600;">${ScriptService.getStatusLabel(s.status)}</span>
     `;
 
@@ -3396,6 +3496,40 @@ const App = {
       t.style.transform = 'translateY(10px)';
       setTimeout(() => t.remove(), 200);
     }, 3200);
+  },
+
+  showUndoToast(msg, onUndo, type = 'info') {
+    const cont = document.getElementById('toastContainer');
+    if (!cont) return;
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.style.display = 'flex';
+    t.style.alignItems = 'center';
+    t.style.justifyContent = 'space-between';
+    t.style.gap = '12px';
+    t.style.maxWidth = '460px';
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = msg;
+    t.appendChild(textSpan);
+
+    if (typeof onUndo === 'function') {
+      const undoBtn = document.createElement('button');
+      undoBtn.className = 'btn-undo-toast';
+      undoBtn.textContent = '↩️ 되살리기(실행 취소)';
+      undoBtn.addEventListener('click', () => {
+        onUndo();
+        t.remove();
+      });
+      t.appendChild(undoBtn);
+    }
+
+    cont.appendChild(t);
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(10px)';
+      setTimeout(() => t.remove(), 300);
+    }, 7000);
   }
 };
 
