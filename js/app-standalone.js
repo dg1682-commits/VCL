@@ -1795,9 +1795,10 @@ const App = {
       let q = searchInput.value.trim();
       if (!q) { this.renderRecommendations('all'); return; }
 
-      // Check if user entered a full URL
-      if (q.startsWith('http://') || q.startsWith('https://')) {
-        const m = q.match(/productCode=([a-zA-Z0-9_-]+)/i);
+      // 1. Check if user entered a URL (or contains vitsonmro)
+      const isUrl = /^https?:\/\//i.test(q) || /vitsonmro\.com/i.test(q);
+      if (isUrl) {
+        const m = q.match(/productCode=([a-zA-Z0-9_-]+)/i) || q.match(/\b\d{4,10}\b/);
         if (m && m[1]) {
           const code = m[1];
           const results = ProductService.search(code);
@@ -1805,7 +1806,7 @@ const App = {
             ProductService.currentRecommendations = results.slice(0, 5);
             this.renderRecommendationCards(ProductService.currentRecommendations);
             this.selectProduct(results[0]);
-            this.showToast(`URL에서 상품코드 [${code}]를 인식하여 로드했습니다! 💡`);
+            this.showToast(`URL에서 상품코드 [${code}]를 인식하여 즉시 로드했습니다! 💡`);
             return;
           }
         }
@@ -1814,37 +1815,24 @@ const App = {
         return;
       }
 
+      // 2. Check if user entered a numeric product code (e.g. 158088)
+      const isNumericCode = /^\d{4,10}$/.test(q);
+
       const results = ProductService.search(q);
       if (results.length > 0) {
         ProductService.currentRecommendations = results.slice(0, 5);
         this.renderRecommendationCards(ProductService.currentRecommendations);
         this.selectProduct(results[0]);
         this.showToast(`검색 결과 ${results.length}건 중 상위 5건을 표시합니다.`);
+      } else if (isNumericCode) {
+        // Automatically crawl numeric product code from MRO!
+        this.crawlMroProduct(q);
       } else {
         this.renderSearchFallback(q);
       }
     };
     btnSearch.addEventListener('click', doSearch);
     searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-
-    // MRO Direct URL / Code Crawler Bar (상시 노출)
-    const mroDirectUrlInput = document.getElementById('mroDirectUrlInput');
-    const btnFetchMroDirect = document.getElementById('btnFetchMroDirect');
-    if (btnFetchMroDirect && mroDirectUrlInput) {
-      const doFetchDirect = () => {
-        const val = mroDirectUrlInput.value.trim();
-        if (!val) {
-          this.showToast('비츠온MRO 상품 상세 URL 또는 상품코드를 입력해주세요.', 'warning');
-          mroDirectUrlInput.focus();
-          return;
-        }
-        this.crawlMroProduct(val);
-      };
-      btnFetchMroDirect.addEventListener('click', doFetchDirect);
-      mroDirectUrlInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') doFetchDirect();
-      });
-    }
 
     // Detail Tabs
     document.querySelectorAll('.detail-tab-btn').forEach(btn => {
@@ -2364,83 +2352,32 @@ const App = {
     const strip = document.getElementById('recCardsStrip');
     strip.innerHTML = '';
 
-    // Check if q is URL or numeric code
-    let initialUrl = '';
-    let initialCode = '';
-    if (q.startsWith('http://') || q.startsWith('https://')) {
-      initialUrl = q;
-      const m = q.match(/productCode=([a-zA-Z0-9_-]+)/i);
-      if (m && m[1]) initialCode = m[1];
-      else {
-        const num = q.match(/\b\d{4,10}\b/);
-        if (num) initialCode = num[0];
-      }
-    } else if (/^\d{3,10}$/.test(q)) {
-      initialCode = q;
-      initialUrl = `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${q}`;
-    }
-
-    const mroUrl = initialCode 
-      ? `https://vitsonmro.com/mro/shop/productDetail.do?productCode=${initialCode}`
-      : (initialUrl || `https://vitsonmro.com/mro/shop/productList.do?keyword=${encodeURIComponent(q)}`);
+    const mroUrl = `https://vitsonmro.com/mro/shop/productList.do?keyword=${encodeURIComponent(q)}`;
 
     const card = document.createElement('div');
     card.className = 'search-fallback-card';
     card.innerHTML = `
-      <div class="fallback-badge">⚡ 비츠온MRO 하이브리드 연동 & AI 즉시 기획</div>
-      <h4 class="fallback-title">🔍 '${this.escapeHtml(q)}' 검색 결과 (VCL 로컬 DB 미포함)</h4>
+      <div class="fallback-badge">비츠온MRO 실시간 연동</div>
+      <h4 class="fallback-title">🔍 '${this.escapeHtml(q)}' 검색 결과 안내</h4>
       <p class="fallback-desc">
-        현재 로컬 DB에 등록되지 않은 비츠온/홈빛/MRO 상품입니다.<br>
-        아래에 <strong>비츠온MRO 상품 상세 URL</strong> 또는 상품코드를 입력하여 실시간 스펙을 긁어오거나 직접 기획할 수 있습니다.
+        현재 로컬 DB에 일치하는 상품명이 없습니다.<br>
+        상단 검색창에 <strong>비츠온MRO 상세 URL</strong> 또는 <strong>상품코드(숫자)</strong>를 입력하시면 자동으로 스펙과 이미지를 긁어옵니다.
       </p>
-
-      <!-- URL / 상품코드 직접 입력 박스 (사용자 요청사항 100% 반영) -->
-      <div class="fallback-url-box">
-        <label>
-          <span>🔗 비츠온MRO 상품 상세 URL (또는 상품코드) 직접 입력</span>
-          <span style="color: #64748b; font-weight: normal; font-size: 0.76rem;">주소창 URL을 그대로 붙여넣으세요</span>
-        </label>
-        <div class="fallback-url-input-row">
-          <input type="text" id="fallbackUrlInput" class="fallback-url-input" 
-            placeholder="예: https://vitsonmro.com/mro/shop/productDetail.do?productCode=${initialCode || '158088'}" 
-            value="${this.escapeHtml(initialUrl || initialCode)}" />
-          <button id="btnCrawlFromUrlInput" class="btn-mro-view-lg" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; cursor: pointer; color: #fff; font-weight: 700; padding: 0 18px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; gap: 6px;">
-            ⚡ URL로 스펙 긁어오기 🚀
-          </button>
-        </div>
-      </div>
 
       <div class="fallback-actions">
         <a href="${mroUrl}" target="_blank" rel="noopener noreferrer" class="btn-mro-view-lg">
-          🛒 MRO 공식몰에서 ${initialCode ? `[${initialCode}]` : `'${this.escapeHtml(q)}'`} 직접 열기 ↗
+          🛒 비츠온MRO 공식몰에서 '${this.escapeHtml(q)}' 검색 ↗
         </a>
         <button id="btnOpenQuickAddFromFallback" class="btn-quick-add-lg">
-          ➕ 제원 직접 입력 & AI 기획
+          ➕ 직접 등록
         </button>
       </div>
     `;
 
     strip.appendChild(card);
 
-    document.getElementById('btnCrawlFromUrlInput')?.addEventListener('click', () => {
-      const urlVal = document.getElementById('fallbackUrlInput')?.value.trim() || q;
-      if (!urlVal) {
-        this.showToast('비츠온MRO 상품 URL이나 상품코드를 입력해주세요.', 'error');
-        return;
-      }
-      this.crawlMroProduct(urlVal);
-    });
-
-    document.getElementById('fallbackUrlInput')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const urlVal = document.getElementById('fallbackUrlInput')?.value.trim() || q;
-        if (urlVal) this.crawlMroProduct(urlVal);
-      }
-    });
-
     document.getElementById('btnOpenQuickAddFromFallback')?.addEventListener('click', () => {
-      const urlVal = document.getElementById('fallbackUrlInput')?.value.trim() || q;
-      this.openQuickProductModal(urlVal);
+      this.openQuickProductModal(q);
     });
   },
 
@@ -2495,23 +2432,13 @@ const App = {
       this.renderRecommendationCards(ProductService.currentRecommendations);
       this.selectProduct(p);
 
-      const directInput = document.getElementById('mroDirectUrlInput');
-      if (directInput) directInput.value = '';
       const searchInput = document.getElementById('productSearchInput');
       if (searchInput && (searchInput.value.startsWith('http') || searchInput.value.trim() === code)) {
         searchInput.value = '';
       }
 
-      if (p.isFallbackConstructed) {
-        ProgressIndicator.complete(`[${p.productNm}] 공식 이미지 및 링크 복원 완료!`);
-        this.showToast(`비츠온MRO [${p.productCode}] 상품이 등록되었습니다! (공식 이미지/링크 복원 완료) 🚀`, 'success');
-        setTimeout(() => {
-          this.openQuickProductModal(code);
-        }, 800);
-      } else {
-        ProgressIndicator.complete(`[${p.productNm}] 수집 및 DB 영구 저장 완료!`);
-        this.showToast(`비츠온MRO에서 [${p.productNm}] 스펙을 성공적으로 긁어와 DB에 저장했습니다! 🚀`, 'success');
-      }
+      ProgressIndicator.complete(`[${p.productNm}] 수집 및 로드 완료!`);
+      this.showToast(`비츠온MRO [${p.productNm}] 스펙 및 이미지를 성공적으로 불러왔습니다! 🚀`, 'success');
     } catch (err) {
       ProgressIndicator.error(err.message);
       this.showToast(`MRO 수집 오류: ${err.message}`, 'error');
