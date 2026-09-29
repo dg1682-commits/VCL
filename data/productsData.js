@@ -1,4 +1,37 @@
-﻿window.VCL_PRODUCTS = [
+window.VCL_PRODUCTS = [
+    {
+        "productCode": "158088",
+        "productNm": "태양광 LED 잔디등",
+        "brandNm": "비츠온",
+        "modelName": "158088",
+        "standard": "모래시계 RGB (문주등/파이프 겸용)",
+        "pictureNm": "https://vitsonimg.co.kr/images/productsNew/158/158088 (1).jpg",
+        "category1": "경관조명",
+        "category2": "LED 태양광",
+        "category3": "태양광 잔디등",
+        "maker": "비츠온",
+        "unitPrice": "51667.0",
+        "weightKg": "3.96",
+        "icons": "<span class=\"basic_ic ic_901016\" style=\"border:1px solid transparent; background:#1d6ece; color:#FFFFFF;\">당일출고</span>,<span class=\"basic_ic\" style=\"border:1px solid transparent; background:#EF2F88; color:#FFFFFF;\">추천</span>",
+        "specs": {
+            "상품코드": "158088",
+            "브랜드": "비츠온",
+            "규격": "모래시계 RGB (문주등/파이프 겸용)",
+            "출고/단위": "1BOX/10EA",
+            "모델명": "158088",
+            "중량(kg)": "3.96",
+            "카테고리": "경관조명 > LED 태양광 > 태양광 잔디등",
+            "단가": "51,667원",
+            "공식몰링크": "https://vitsonmro.com/mro/shop/productDetail.do?productCode=158088"
+        },
+        "detailImages": [
+            "https://vitsonimg.co.kr/images/productsNew/158/158088 (1).jpg",
+            "https://vitsonimg.co.kr/images/productsNew/158/158088.jpg",
+            "https://vitsonimg.co.kr/images/productsNew/158/비츠온-태양광-led-잔디등-모래시계-상세페이지_01 (1).jpg",
+            "https://vitsonimg.co.kr/images/productsNew/158/비츠온-태양광-led-잔디등-모래시계-상세페이지_03 (1).jpg"
+        ],
+        "detailUrl": "https://vitsonmro.com/mro/shop/productDetail.do?productCode=158088"
+    },
     {
         "productCode":  "43332",
         "productNm":  "PL 등기구 LED",
