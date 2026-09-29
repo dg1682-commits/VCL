@@ -1323,6 +1323,7 @@ const ProgressIndicator = {
       fillEl.style.background = 'linear-gradient(90deg, #2563eb, #38bdf8)';
     }
 
+    widget.style.setProperty('display', 'flex', 'important');
     widget.classList.add('active');
 
     // Simulate progress smoothly from 8% up to ~88%
@@ -1352,6 +1353,11 @@ const ProgressIndicator = {
     if (!widget) return;
     setTimeout(() => {
       widget.classList.remove('active');
+      setTimeout(() => {
+        if (!widget.classList.contains('active')) {
+          widget.style.setProperty('display', 'none', 'important');
+        }
+      }, 350);
     }, 1500);
   },
 
@@ -1365,6 +1371,11 @@ const ProgressIndicator = {
     setTimeout(() => {
       widget?.classList.remove('active');
       if (fillEl) fillEl.style.background = '';
+      setTimeout(() => {
+        if (widget && !widget.classList.contains('active')) {
+          widget.style.setProperty('display', 'none', 'important');
+        }
+      }, 350);
     }, 3000);
   }
 };
@@ -1798,7 +1809,8 @@ const App = {
             return;
           }
         }
-        this.renderSearchFallback(q);
+        // Directly crawl URL if not in local DB!
+        this.crawlMroProduct(q);
         return;
       }
 
@@ -1814,6 +1826,25 @@ const App = {
     };
     btnSearch.addEventListener('click', doSearch);
     searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+    // MRO Direct URL / Code Crawler Bar (상시 노출)
+    const mroDirectUrlInput = document.getElementById('mroDirectUrlInput');
+    const btnFetchMroDirect = document.getElementById('btnFetchMroDirect');
+    if (btnFetchMroDirect && mroDirectUrlInput) {
+      const doFetchDirect = () => {
+        const val = mroDirectUrlInput.value.trim();
+        if (!val) {
+          this.showToast('비츠온MRO 상품 상세 URL 또는 상품코드를 입력해주세요.', 'warning');
+          mroDirectUrlInput.focus();
+          return;
+        }
+        this.crawlMroProduct(val);
+      };
+      btnFetchMroDirect.addEventListener('click', doFetchDirect);
+      mroDirectUrlInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') doFetchDirect();
+      });
+    }
 
     // Detail Tabs
     document.querySelectorAll('.detail-tab-btn').forEach(btn => {
@@ -2469,6 +2500,13 @@ const App = {
       ProductService.currentRecommendations = [p, ...ProductService.currentRecommendations.filter(x => String(x.productCode) !== String(p.productCode)).slice(0, 4)];
       this.renderRecommendationCards(ProductService.currentRecommendations);
       this.selectProduct(p);
+
+      const directInput = document.getElementById('mroDirectUrlInput');
+      if (directInput) directInput.value = '';
+      const searchInput = document.getElementById('productSearchInput');
+      if (searchInput && (searchInput.value.startsWith('http') || searchInput.value.trim() === code)) {
+        searchInput.value = '';
+      }
 
       if (p.isFallbackConstructed) {
         ProgressIndicator.complete(`[${p.productNm}] 공식 이미지 및 링크 복원 완료!`);
