@@ -1377,6 +1377,48 @@ button {
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+.fallback-url-box {
+  margin: 14px auto 16px auto;
+  max-width: 640px;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  text-align: left;
+}
+
+.fallback-url-box label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #93c5fd;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.fallback-url-input-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fallback-url-input {
+  flex: 1;
+  min-width: 260px;
+  padding: 9px 12px;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid #3b82f6;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fallback-url-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
 }
 
 .fallback-actions {
