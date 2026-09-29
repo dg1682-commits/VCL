@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VCL-Light | (주)일신비츠온 콘텐츠 기획 & 대본 스튜디오</title>
-  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="./css/style.css?v=2.11" />
   <!-- Favicon -->
   <link rel="icon" href="https://vitsonmro.com/resources/img/mro/favicon/favicon.ico" type="image/x-icon">
 </head>
@@ -68,6 +68,15 @@
           <!-- 5 RECOMMENDATION CARDS STRIP -->
           <div id="recCardsStrip" class="rec-cards-strip">
             <!-- Dynamic 5 cards rendered via JS -->
+          </div>
+
+          <!-- MRO DIRECT CRAWLER BAR (상시 노출) -->
+          <div class="mro-direct-crawl-bar">
+            <div class="mro-crawl-input-group">
+              <span class="mro-crawl-icon">🔗</span>
+              <input type="text" id="mroDirectUrlInput" class="mro-direct-input" placeholder="비츠온MRO 상품 상세 URL (또는 상품코드) 붙여넣기..." />
+              <button id="btnFetchMroDirect" class="btn-mro-crawl" title="비츠온MRO 페이지에서 제원과 이미지를 즉시 긁어와 DB에 저장합니다">⚡ 스펙 긁어오기</button>
+            </div>
           </div>
 
           <!-- SEARCH & DIRECT LOOKUP -->
@@ -975,7 +984,7 @@
   </div>
 
   <!-- FLOATING PROGRESS WIDGET (BOTTOM-LEFT) -->
-  <div id="floatingProgressWidget" class="floating-progress-widget">
+  <div id="floatingProgressWidget" class="floating-progress-widget" style="display: none !important;">
     <div class="fpw-header">
       <div class="fpw-icon-wrap">
         <span id="fpwIcon" class="fpw-icon">⚡</span>
@@ -1000,6 +1009,6 @@
   <!-- Embedded Product Catalog (532 Verified Items - 비츠온/홈빛/MRO) -->
   <script src="./data/productsData.js"></script>
   <!-- Application Logic -->
-  <script src="./js/app-standalone.js"></script>
+  <script src="./js/app-standalone.js?v=2.11"></script>
 </body>
 </html>
