@@ -2305,18 +2305,12 @@ const App = {
       if (item.brandNm === '비츠온') badgeClass = 'badge-vitson';
       else if (item.brandNm === '홈빛') badgeClass = 'badge-homevit';
 
-      const isCrawled = item.isCrawled || item.category1 === 'MRO 크롤링';
-      const dbBadgeHtml = isCrawled 
-        ? `<span class="rec-db-badge badge-mro-db" title="MRO 수집 후 DB 저장된 상품">DB(MRO)</span>`
-        : `<span class="rec-db-badge" title="VCL 표준 DB 등록 상품">DB</span>`;
-
       card.innerHTML = `
         <div class="rec-card-thumb">
           <img src="${item.pictureNm || 'https://vitsonimg.co.kr/images/productsNew/preparing.jpg'}" alt="${item.productNm}" onerror="this.src='https://vitsonimg.co.kr/images/productsNew/preparing.jpg'" />
         </div>
         <div class="rec-card-badges">
           <span class="rec-brand-badge ${badgeClass}">${item.brandNm}</span>
-          ${dbBadgeHtml}
         </div>
         <div class="rec-card-name" title="${item.productNm}">${item.productNm}</div>
         <div class="rec-card-standard">${item.standard || item.modelName || '기본 규격'}</div>
