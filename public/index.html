@@ -13,7 +13,7 @@
   <header class="vcl-header">
     <div class="brand-section">
       <div class="brand-logo-badge">
-        <span>⚡ VCL-Light</span>
+        <span>⚡ VCL-Light <span style="font-size: 0.65rem; background: rgba(37,99,235,0.4); padding: 1px 5px; border-radius: 3px; margin-left: 4px; border: 1px solid #3b82f6;">v2.12</span></span>
       </div>
       <div class="brand-titles">
         <h1>(주)일신비츠온 콘텐츠 랩</h1>
@@ -70,20 +70,11 @@
             <!-- Dynamic 5 cards rendered via JS -->
           </div>
 
-          <!-- MRO DIRECT CRAWLER BAR (상시 노출) -->
-          <div class="mro-direct-crawl-bar">
-            <div class="mro-crawl-input-group">
-              <span class="mro-crawl-icon">🔗</span>
-              <input type="text" id="mroDirectUrlInput" class="mro-direct-input" placeholder="비츠온MRO 상품 상세 URL (또는 상품코드) 붙여넣기..." />
-              <button id="btnFetchMroDirect" class="btn-mro-crawl" title="비츠온MRO 페이지에서 제원과 이미지를 즉시 긁어와 DB에 저장합니다">⚡ 스펙 긁어오기</button>
-            </div>
-          </div>
-
           <!-- SEARCH & DIRECT LOOKUP -->
           <div class="product-search-bar">
-            <input type="text" id="productSearchInput" class="product-search-input" placeholder="원하는 제품명, 모델명 또는 비츠온MRO 상품코드 검색..." />
+            <input type="text" id="productSearchInput" class="product-search-input" placeholder="원하는 제품명, 모델명, 상품코드 또는 비츠온MRO URL 검색..." />
             <button id="btnSearchProduct" class="btn-search">검색</button>
-            <button id="btnOpenQuickProductModal" class="btn-quick-reg" title="MRO 상품코드 또는 새 제품 직접 등록 & 즉시 AI 기획">➕ 직접 등록</button>
+            <button id="btnOpenQuickProductModal" class="btn-quick-reg" title="새 제품 직접 등록 & 즉시 AI 기획">➕ 직접 등록</button>
           </div>
 
           <!-- SELECTED PRODUCT DETAIL PANEL -->
@@ -855,24 +846,24 @@
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 1.3rem;">📢</span>
           <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">VCL-Light 최신 업데이트 내역</h3>
-          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.11 Live</span>
+          <span style="font-size: 0.72rem; background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 700;">v2.12 Live</span>
         </div>
         <button id="btnCloseChangelogModal" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
       </div>
       <div class="modal-body changelog-modal-body">
 
-        <!-- Ver 2.11 -->
+        <!-- Ver 2.12 -->
         <div class="changelog-item">
           <div class="changelog-item-header">
-            <span class="changelog-ver">v2.11</span>
-            <span class="changelog-date">2026.09.29 (최신)</span>
+            <span class="changelog-ver">v2.12</span>
+            <span class="changelog-date">2026.09.30 (최신)</span>
             <span class="changelog-badge-new">NEW</span>
           </div>
           <ul class="changelog-list">
-            <li><strong>🔗 비츠온MRO URL 바로 긁어오기 바 상시 노출:</strong> 첫 화면 추천 카드 아래에 비츠온MRO 상세 URL 또는 상품코드를 언제든 바로 넣고 1초 만에 긁어오는 전용 입력창을 영구 배치했습니다.</li>
-            <li><strong>✍️ 콘티 대본/미리보기 폰트 크기 v2.9 원복 & 스크롤 완벽 해결:</strong> 대본 표 및 미리보기 폰트 크기를 v2.9의 0.84rem 규격으로 100% 원복하고, 콘티 표 및 모달 하단 스크롤 영역이 잘리지 않도록 레이아웃 패딩을 수정했습니다.</li>
+            <li><strong>🔍 단일 검색창 URL / 상품코드 / 키워드 완벽 통합:</strong> 지저분했던 보조 URL 입력 바를 완전히 제거하고, 원래의 깔끔한 상단 단일 검색창에서 MRO URL, 6자리 상품코드, 제품명 모두 즉시 자동 크롤링 및 로드되도록 통합했습니다.</li>
+            <li><strong>⚡ 크롤링 시 상세정보 수동 입력 팝업 원천 차단:</strong> 크롤링 시 상세정보 입력을 요구하는 팝업이 일절 뜨지 않으며, 비츠온 공식 CDN 이미지와 규격/제원을 자동으로 긁어와 즉시 스튜디오에 채워 넣습니다.</li>
+            <li><strong>✍️ 콘티 대본/미리보기 폰트 크기 v2.9 규격 복원 & 스크롤 완벽 해결:</strong> 대본 표 및 미리보기 폰트 크기를 v2.9(0.84rem) 규격으로 복원하고 하단 스크롤 잘림 현상을 해결했습니다.</li>
             <li><strong>🏷️ 추천 카드 [DB] 표기 제거:</strong> 추천 카드 상단에 노출되던 불필요한 DB 텍스트 표기를 깔끔하게 제거했습니다.</li>
-            <li><strong>⚡ 좌측 하단 진행 위젯 잔상 완전 제거:</strong> 초기 로딩 시 좌측 구석에 살짝 삐져나오던 잔상을 완벽히 숨김 처리했습니다.</li>
           </ul>
         </div>
 
@@ -1020,8 +1011,8 @@
   <!-- Firebase SDK Compat (Zero-module, works directly in any browser & file:// protocol) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-  <!-- Embedded Product Catalog (532 Verified Items - 비츠온/홈빛/MRO) -->
-  <script src="./data/productsData.js"></script>
+  <!-- Embedded Product Catalog (533 Verified Items - 비츠온/홈빛/MRO) -->
+  <script src="./data/productsData.js?v=2.12"></script>
   <!-- Application Logic -->
   <script src="./js/app-standalone.js?v=2.12"></script>
 </body>
